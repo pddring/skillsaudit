@@ -16,3 +16,6 @@ Moodle skills audit activity module
  - Rate their confidence against each skill
  - Update the confidence rating at a later date
  - See how their own confidence has changed over time
+
+## Progress
+Nothing works yet :)
