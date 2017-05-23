@@ -28,15 +28,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['modulename'] = 'skillsaudit';
-$string['modulenameplural'] = 'skillsaudits';
-$string['modulename_help'] = '<p>A skillsaudit allows students to rate their confidence in a list of skills.</p><p>Teachers can see how the confidence rating of each student changes over time.</p>';
+$string['modulename'] = 'Skills audit';
+$string['modulenameplural'] = 'Skills audits';
+$string['modulename_help'] = '<p>A Skills audit allows students to rate their confidence in a list of skills.</p><p>Teachers can see how the confidence rating of each student changes over time.</p>';
 $string['skillsaudit:addinstance'] = 'Add a new skillsaudit';
-$string['skillsaudit:submit'] = 'Submit skillsaudit';
-$string['skillsaudit:view'] = 'View skillsaudit';
+$string['skillsaudit:submit'] = 'Submit skills audit';
+$string['skillsaudit:view'] = 'View skills audit';
 $string['skillsauditfieldset'] = 'Custom example fieldset';
-$string['skillsauditname'] = 'skillsaudit name';
+$string['skillsauditname'] = 'Skills audit name';
 $string['skillsauditname_help'] = 'This is the content of the help tooltip associated with the skillsauditname field. Markdown syntax is supported.';
-$string['skillsaudit'] = 'skillsaudit';
-$string['pluginadministration'] = 'skillsaudit administration';
+$string['skillsaudit'] = 'Skills audit';
+$string['pluginadministration'] = 'skills audit administration';
 $string['pluginname'] = 'skillsaudit';
