@@ -42,7 +42,7 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $CFG;
+        global $CFG, $PAGE;
 
         $mform = $this->_form;
 
@@ -71,8 +71,11 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
         // ... or adding more fieldsets ('header' elements) if needed for better logic.
         $mform->addElement('static', 'label1', 'skillsauditsetting1', 'Your skillsaudit fields go here. Replace me!');
 
-        $mform->addElement('header', 'skillsauditfieldset', get_string('skillsauditfieldset', 'skillsaudit'));
-        $mform->addElement('static', 'label2', 'skillsauditsetting2', 'Your skillsaudit fields go here. Replace me!');
+        $mform->addElement('header', 'skills', get_string('skills', 'skillsaudit'));
+        $mform->addElement('static', 'label2', 'Skills', '<div id="skills">Testing</div>');
+		
+		$PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'init');
+
 
         // Add standard grading elements.
         $this->standard_grading_coursemodule_elements();

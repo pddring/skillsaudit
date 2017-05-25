@@ -27,8 +27,8 @@
 
 // Replace skillsaudit with the name of your module and remove this line.
 
-require_once('../../config.php');
-require_once('lib.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... skillsaudit instance ID - it should be named as the first character of the module.
