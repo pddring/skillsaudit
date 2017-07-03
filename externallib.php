@@ -7,6 +7,39 @@ class mod_skillsaudit_external extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
+    public static function delete_rating_parameters() {
+        return new external_function_parameters(
+            array(
+				'cmid' => new external_value(PARAM_INT, 'course module id'),
+				'ratingid' => new external_value(PARAM_INT, 'confidence rating id')
+            )
+        );
+    }
+	
+	public static function delete_rating_returns() {
+        return new external_value(PARAM_INT, 'rating id deleted');
+    }
+	
+	public static function delete_rating($cmid, $ratingid) {
+		// check we have access rights to change skills
+		global $CFG, $USER, $DB;
+		
+		$params = self::validate_parameters(self::delete_rating_parameters(), array('cmid' => $cmid, 'ratingid' => $ratingid));
+		
+		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+		$context = context_module::instance($cm->id);
+		require_capability('mod/skillsaudit:submit', $context);
+				
+		$result = $DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
+		
+		return json_encode($ratingid);
+		
+	}
+	
+	/**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
     public static function save_confidence_parameters() {
         return new external_function_parameters(
             array(

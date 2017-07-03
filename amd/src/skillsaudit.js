@@ -1,9 +1,36 @@
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], function($, ModalFactory, ModalEvents, ajax) {
     var mod = {
-		viewinit: function(course, skills, auditid) {
+		viewinit: function(course, skills, auditid, cmid) {
 			var i;
 			var confidence = 0;
 			var currentSkillId = -1;
+			
+			$('.btn_delete').click(function(e) {
+				var id = e.currentTarget.id.replace("btn_delete_", "");
+				
+				ModalFactory.create({
+					type: ModalFactory.types.SAVE_CANCEL,
+					title: 'Confirm delete',
+					body: 'Are you sure you want to delete this rating?<p>If you press save, there\'s no way to undo this action</p>'
+				}).done(function(modal){
+					modal.show();
+					var r = modal.getRoot();
+					r.on(ModalEvents.save, function(e) {
+						var promises = ajax.call([{
+							methodname: 'mod_skillsaudit_delete_rating',
+							args: {cmid: cmid, ratingid: id}
+						}]);
+						
+						promises[0].done(function(response) {
+							if(response == id) {
+								$('#rating_' + id).remove();
+							}
+							
+						});
+					});
+				});				
+				
+			});
 			
 			function drawChart(confidence) {
 				var h = 120 * confidence / 100;

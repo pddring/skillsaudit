@@ -34,6 +34,9 @@ $string['modulename_help'] = '<p>A Skills audit allows students to rate their co
 $string['skillsaudit:addinstance'] = 'Add a new skillsaudit';
 $string['skillsaudit:submit'] = 'Submit skills audit';
 $string['skillsaudit:view'] = 'View skills audit';
+$string['skillsaudit:editownrating'] = 'Edit their own skills rating';
+$string['skillsaudit:deleteownrating'] = 'Delete their own skills rating';
+
 $string['skills'] = 'Skills';
 $string['skillsauditname'] = 'Skills audit name';
 $string['skillsauditname_help'] = 'This is the content of the help tooltip associated with the skillsauditname field. Markdown syntax is supported.';
