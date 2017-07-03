@@ -42,28 +42,32 @@ function xmldb_skillsaudit_upgrade($oldversion) {
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 	
-	if ($oldversion < 2017052300) {
+	if ($oldversion < 2017061300) {
 
-        // Define table skills to be created.
-        $table = new xmldb_table('skills');
+		// Define field options to be added to skillsaudit.
+		$table = new xmldb_table('skillsaudit');
+		$field = new xmldb_field('options', XMLDB_TYPE_TEXT, null, null, null, null, null, 'grade');
 
-        // Adding fields to table skills.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('number', XMLDB_TYPE_CHAR, '64', null, null, null, null);
-        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+		// Conditionally launch add field options.
+		if (!$dbman->field_exists($table, $field)) {
+			$dbman->add_field($table, $field);
+		}
+		
+		$field = new xmldb_field('question', XMLDB_TYPE_TEXT, null, null, null, null, null, 'options');
 
-        // Adding keys to table skills.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+		// Conditionally launch add field question.
+		if (!$dbman->field_exists($table, $field)) {
+			$dbman->add_field($table, $field);
+		}
 
-        // Conditionally launch create table for skills.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
 
-        // Skillsaudit savepoint reached.
-        upgrade_mod_savepoint(true, XXXXXXXXXX, 'skillsaudit');
-    }
+		// Skillsaudit savepoint reached.
+		upgrade_mod_savepoint(true, 2017061300, 'skillsaudit');
+	}
+
+
+
+
 
 
     /*

@@ -1,3 +1,5 @@
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -30,11 +32,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
-/**
- * Example constant, you probably want to remove this :-)
- */
-define('SKILLSAUDIT_ULTIMATE_ANSWER', 42);
 
 /* Moodle core API */
 
@@ -79,9 +76,24 @@ function skillsaudit_add_instance(stdClass $skillsaudit, mod_skillsaudit_mod_for
 
     $skillsaudit->timecreated = time();
 
-    // You may have to add extra stuff in here.
+    $data = $mform->get_data();
+	$skillsaudit->question = $data->confidence_question;
+	$skillsaudit->options = $data->confidence_options;
 
     $skillsaudit->id = $DB->insert_record('skillsaudit', $skillsaudit);
+	
+	$skillids = preg_split("/[\s,]+/", $data->skills);
+	
+	foreach($skillids as $skillid) {
+		if(!preg_match('/\d+/', $skillid)) {
+			continue;
+		}
+		
+		$skillinaudit = new stdClass();
+		$skillinaudit->skillid = $skillid;
+		$skillinaudit->auditid = $skillsaudit->id;
+		$skillinaudit->id = $DB->insert_record('skillsinaudit', $skillinaudit);
+	}
 
     skillsaudit_grade_item_update($skillsaudit);
 
@@ -100,15 +112,49 @@ function skillsaudit_add_instance(stdClass $skillsaudit, mod_skillsaudit_mod_for
  * @return boolean Success/Fail
  */
 function skillsaudit_update_instance(stdClass $skillsaudit, mod_skillsaudit_mod_form $mform = null) {
-    global $DB;
+    global $DB, $COURSE;
 
     $skillsaudit->timemodified = time();
     $skillsaudit->id = $skillsaudit->instance;
 
-    // You may have to add extra stuff in here.
+    $data = $mform->get_data();
+	$skillsaudit->question = $data->confidence_question;
+	$skillsaudit->options = $data->confidence_options;
 
     $result = $DB->update_record('skillsaudit', $skillsaudit);
+	
+	// get skills currently added
+	$current_skills = $DB->get_records('skillsinaudit', array('auditid'=>$skillsaudit->id));
+	$already_added = array();
+	foreach($current_skills as $current_skill) {
+		$already_added[$current_skill->skillid] = $current_skill;
+	}
+	$to_remove = $already_added;
+	
+	// ignore skills already added
+	$skillids = preg_split("/[\s,]+/", $data->skills);
 
+	foreach($skillids as $skillid) {
+		if(!preg_match('/\d+/', $skillid)) {
+			continue;
+		}
+		if(array_key_exists($skillid, $already_added)) {
+			// already added - remove from deletion list
+			unset($to_remove[$skillid]);
+		} else {
+			$skillinaudit = new stdClass();
+			$skillinaudit->skillid = $skillid;
+			$skillinaudit->auditid = $skillsaudit->id;
+			$skillinaudit->id = $DB->insert_record('skillsinaudit', $skillinaudit);
+		}
+	}
+	
+
+	// remove all unwanted skills
+	foreach($to_remove as $skillinaudit) {
+		$DB->delete_records('skillsinaudit', array('id'=>$skillinaudit->id));
+	}
+	
     skillsaudit_grade_item_update($skillsaudit);
 
     return $result;

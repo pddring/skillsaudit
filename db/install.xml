@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/skillsaudit/db" VERSION="20170523" COMMENT="XMLDB file for Moodle mod/skillsaudit"
+<XMLDB PATH="mod/skillsaudit/db" VERSION="20170613" COMMENT="XMLDB file for Moodle mod/skillsaudit"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -14,6 +14,8 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false" COMMENT="The maximum grade. Can be negative to indicate the use of a scale."/>
+        <FIELD NAME="options" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="CSV of confidence rating options"/>
+        <FIELD NAME="question" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Question students are asked when rating their confidence"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -28,6 +30,31 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the course the skill applies to"/>
         <FIELD NAME="number" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="Skill reference ID from specification or scheme of work (e.g. 2.1)"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the skill"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="skillsinaudit" COMMENT="Skills in a skillsaudit">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="skillid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID number of the skill"/>
+        <FIELD NAME="auditid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID number of the skillsaudit that this skill belongs to"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Order to display this skill (lower numbers shown before higher numbers)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="skillsauditrating" COMMENT="Rating for confidence in a skill">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="auditid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the skills audit"/>
+        <FIELD NAME="skillid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the skill"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the user currently being rated"/>
+        <FIELD NAME="confidence" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Confidence rating for this skill"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Time when this rating was applied"/>
+        <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="User written comment to go alongside this rating"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

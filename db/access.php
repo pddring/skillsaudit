@@ -76,4 +76,14 @@ $capabilities = array(
             'student' => CAP_ALLOW
         )
     ),
+	
+	'mod/skillsaudit:editskills' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+			'editingteacher' => CAP_ALLOW
+        )
+    ),
 );

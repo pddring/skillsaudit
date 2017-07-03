@@ -42,7 +42,7 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $COURSE, $DB;
 
         $mform = $this->_form;
 
@@ -66,15 +66,63 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
         } else {
             $this->add_intro_editor();
         }
-
-        // Adding the rest of skillsaudit settings, spreading all them into this fieldset
-        // ... or adding more fieldsets ('header' elements) if needed for better logic.
-        $mform->addElement('static', 'label1', 'skillsauditsetting1', 'Your skillsaudit fields go here. Replace me!');
-
-        $mform->addElement('header', 'skills', get_string('skills', 'skillsaudit'));
-        $mform->addElement('static', 'label2', 'Skills', '<div id="skills">Testing</div>');
 		
-		$PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'init');
+		$mform->addElement('header', 'h_confidence', get_string('confidence', 'skillsaudit'));
+		$mform->addElement('text', 'confidence_question', get_string('confidencequestion', 'skillsaudit'));
+		$mform->setDefault('confidence_question', get_string('defconfidencequestion', 'skillsaudit'));
+		
+		$mform->addElement('text', 'confidence_options', get_string('confidenceoptions', 'skillsaudit'));
+		$mform->setDefault('confidence_options', get_string('defconfidenceoptions', 'skillsaudit'));
+        
+        $mform->addElement('header', 'h_skills', get_string('skills', 'skillsaudit'));
+		$skills = $DB->get_records('skills', array('courseid'=>$COURSE->id));
+		
+		$html = '<h2>' . get_string('skillsinthiscourse', 'skillsaudit') . '</h2>';
+		$html .= '<table class="generaltable" id="tbl_skills"><tr><th>' . get_string('number', 'skillsaudit') . '</th>';
+		$html .= '<th>' . get_string('description', 'skillsaudit') . '</th>';
+		$html .= '<th>' . get_string('included', 'skillsaudit') . '</th></tr>';
+		$src = $CFG->wwwroot . '/mod/skillsaudit/pix/';
+		
+		// get all skills in this audit
+		$skills_included = array();
+		$ids = array();
+		$instance = $this->get_instance();
+		if($instance > 0) {
+			$skillsinaudit = $DB->get_records('skillsinaudit', array('auditid'=>$instance));
+			foreach($skillsinaudit as $skillinaudit) {
+				$skills_included[$skillinaudit->skillid] = $skillinaudit;
+			}
+		}
+		
+		foreach($skills as $skill) {
+			$html .= '<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skill_number">' . $skill->number . '</td><td class="skill_description">' . $skill->description . '</td><td>';
+			if(array_key_exists($skill->id, $skills_included)) {
+				$html .= '<span id="skill_included_' . $skill->id . '" class="skill_included skill_included_yes"></span></td></tr>';
+				$ids[] = $skill->id;
+			} else {
+				$html .= '<span id="skill_included_' . $skill->id . '" class="skill_included skill_included_no"></span></td></tr>';
+			}
+		}
+		$html .= '</table>';
+		$mform->addElement('html', $html);
+		
+		$mform->addElement('hidden', 'skills', implode(',', $ids));
+		
+		
+		// show edit skills section
+		$context = context_course::instance($COURSE->id);
+		if(has_capability('mod/skillsaudit:editskills', $context)) {
+			$mform->addElement('button', 'selectall', get_string("selectall", "skillsaudit"));
+			$mform->addElement('button', 'selectnone', get_string("selectnone", "skillsaudit"));
+			$mform->addElement('button', 'deleteunused', get_string("deleteunused", "skillsaudit"));
+			$mform->addElement('textarea', 'newskills', get_string("newskills", "skillsaudit"), 'wrap="virtual" rows="5" cols="50"');
+			$mform->addElement('button', 'addnew', get_string("newskills", "skillsaudit"));
+
+			$mform->addHelpButton('newskills', 'newskills', 'skillsaudit');
+		}
+
+		
+		$PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'forminit', array('course'=>$COURSE->id, 'modpath'=>$CFG->wwwroot . '/mod/skillsaudit'));
 
 
         // Add standard grading elements.
