@@ -103,6 +103,10 @@ $PAGE->set_heading(format_string($course->fullname));
 $skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?)', array($cm->instance));
 
 
+$context = context_module::instance($cm->id);
+$can_delete_rating = has_capability('mod/skillsaudit:deleteownrating', $context);
+$can_edit_rating = has_capability('mod/skillsaudit:editownrating', $context);
+
 foreach($skills as $skill) {
 	$html = '<div class="ratings">';
 	if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
@@ -110,7 +114,14 @@ foreach($skills as $skill) {
 			$skill->confidence = $rating->confidence;
 			$r = 180 - ($rating->confidence * 180.0 / 100.0);
 			$h = round($rating->confidence * 120.0 / 100.0);
-			$html .= '<div class="rating" id="rating_' . $rating->id .'"><span class="wrist"><span class="minithumb" style="transform: rotate(' . $r . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span><span class="rating_date">' . date("D jS M g:ia", $rating->timestamp) . '</span> <div class="rating_comment">' . format_text($rating->comment) . '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button></div></div>';
+			$html .= '<div class="rating" id="rating_' . $rating->id .'"><span class="wrist"><span class="minithumb" style="transform: rotate(' . $r . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span><span class="rating_date">' . date("D jS M g:ia", $rating->timestamp) . '</span> <div class="rating_comment">' . format_text($rating->comment);
+			if($can_delete_rating) {
+				$html .= '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
+			}
+			if($can_edit_rating) {
+				$html .= '<button class="btn_edit" id="btn_edit_rating_' . $rating->id . '">' . get_string('edit') . '</button>';
+			}
+			$html .='</div></div>';
 		}
 		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';
 		$skill->ratings = $html;
