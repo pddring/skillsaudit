@@ -5,6 +5,12 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			var confidence = 0;
 			var currentSkillId = -1;
 			
+			$('.btn_edit').click(function(e) {
+				//$('#id_comment').html('testing testing 123');
+				//console.log("Hello");
+				///TODO: edit comments
+			});
+			
 			$('.btn_delete').click(function(e) {
 				var id = e.currentTarget.id.replace("btn_delete_", "");
 				
@@ -23,7 +29,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 						
 						promises[0].done(function(response) {
 							if(response == id) {
-								$('#rating_' + id).remove();
+								$('#rating_' + id + ' .rating_comment').remove();
 							}
 							
 						});

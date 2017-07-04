@@ -30,7 +30,11 @@ class mod_skillsaudit_external extends external_api {
 		$context = context_module::instance($cm->id);
 		require_capability('mod/skillsaudit:submit', $context);
 				
-		$result = $DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
+		if($result = $DB->get_record('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance))) {
+			$result->comment = "";
+			$DB->update_record('skillsauditrating', $result);
+		}
+		
 		
 		return json_encode($ratingid);
 		
