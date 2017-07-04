@@ -26,6 +26,12 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 								$('#rating_' + id).remove();
 							}
 							
+							var confidence = $('#skill_row_' + currentSkillId + ' .minithumb').last().attr('data-confidence');
+							if(!confidence)
+								confidence = 0;
+							var hue = Math.round(confidence * 120.0 / 100.0);
+							$('#conf_ind_' + currentSkillId).css({width: confidence + '%', background: 'linear-gradient(to right,red,hsl(' + hue  + ',100%,50%)'});
+							
 						});
 					});
 				});				
