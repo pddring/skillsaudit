@@ -30,6 +30,7 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once("$CFG->libdir/formslib.php");
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
 
 class confidence_rating_form extends moodleform {
 	function definition() {
@@ -111,18 +112,9 @@ foreach($skills as $skill) {
 	if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
 		foreach($ratings as $rating) {
 			$skill->confidence = $rating->confidence;
-			$r = 180 - ($rating->confidence * 180.0 / 100.0);
-			$h = round($rating->confidence * 120.0 / 100.0);
-			$html .= '<div class="rating" id="rating_' . $rating->id .'"><span class="wrist"><span class="minithumb" style="transform: rotate(' . $r . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span><span class="rating_date">' . date("D jS M g:ia", $rating->timestamp) . '</span>';
-			if(strlen($rating->comment) > 0) {
-				$html .= '<div class="rating_comment">' . format_text($rating->comment);
-				if($can_delete_rating) {
-					$html .= '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
-				}
-				$html .='</div>';
-			}
-			$html .='</div>';
+			$html .= skillsaudit_get_rating_html($rating, $can_delete_rating);
 		}
+		$html .= '<div class="new_ratings"></div>';
 		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';
 		$skill->ratings = $html;
 	

@@ -1,6 +1,6 @@
 <?php
 require_once("$CFG->libdir/externallib.php");
- 
+require_once(dirname(__FILE__).'/locallib.php');
 class mod_skillsaudit_external extends external_api {
  
  	/**
@@ -71,6 +71,10 @@ class mod_skillsaudit_external extends external_api {
 		$context = context_course::instance($courseid);
 		require_capability('mod/skillsaudit:submit', $context);
 		
+		$cm = get_coursemodule_from_instance('skillsaudit', $auditid, $courseid, false, MUST_EXIST);
+		$context = context_module::instance($cm->id);
+		$can_delete_rating = has_capability('mod/skillsaudit:deleteownrating', $context);
+		
 		$createnew = true;
 		if($ratings = $DB->get_records('skillsauditrating', array('skillid'=>$skillid, 'auditid'=>$auditid, 'userid'=>$USER->id))) {
 			foreach($ratings as $rating) {
@@ -104,8 +108,8 @@ class mod_skillsaudit_external extends external_api {
 		
 		
 		$transaction->allow_commit();
-		
-		return json_encode($rating);
+
+		return skillsaudit_get_rating_html($rating, $can_delete_rating);
 	}
  
     /**

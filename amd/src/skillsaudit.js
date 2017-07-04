@@ -5,13 +5,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			var confidence = 0;
 			var currentSkillId = -1;
 			
-			$('.btn_edit').click(function(e) {
-				//$('#id_comment').html('testing testing 123');
-				//console.log("Hello");
-				///TODO: edit comments
-			});
-			
-			$('.btn_delete').click(function(e) {
+			function onDeleteRating(e) {
 				var id = e.currentTarget.id.replace("btn_delete_", "");
 				
 				ModalFactory.create({
@@ -36,7 +30,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 					});
 				});				
 				
-			});
+			}
+			
+			$('.btn_delete').click(onDeleteRating);
 			
 			function drawChart(confidence) {
 				var h = 120 * confidence / 100;
@@ -70,6 +66,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 				}]);
 				
 				promises[0].done(function(response) {
+					var html = response;
+					$('#skill_row_' + currentSkillId + ' .ratings .new_ratings').append(html);
+					$('.btn_delete').unbind('click').click(onDeleteRating);
 					if(whenDone)
 						whenDone();
 				});
