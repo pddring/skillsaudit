@@ -23,6 +23,33 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 						
 						promises[0].done(function(response) {
 							if(response == id) {
+								$('#rating_' + id).remove();
+							}
+							
+						});
+					});
+				});				
+				
+			}
+			
+			function onClearRating(e) {
+				var id = e.currentTarget.id.replace("btn_clear_", "");
+				
+				ModalFactory.create({
+					type: ModalFactory.types.SAVE_CANCEL,
+					title: 'Confirm clear',
+					body: 'Are you sure you want to clear this comment?<p>If you press save, there\'s no way to undo this action</p>'
+				}).done(function(modal){
+					modal.show();
+					var r = modal.getRoot();
+					r.on(ModalEvents.save, function(e) {
+						var promises = ajax.call([{
+							methodname: 'mod_skillsaudit_clear_rating',
+							args: {cmid: cmid, ratingid: id}
+						}]);
+						
+						promises[0].done(function(response) {
+							if(response == id) {
 								$('#rating_' + id + ' .rating_comment').remove();
 							}
 							
@@ -33,6 +60,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			}
 			
 			$('.btn_delete').click(onDeleteRating);
+			$('.btn_clear').click(onClearRating);
 			
 			function drawChart(confidence) {
 				var h = 120 * confidence / 100;
@@ -69,6 +97,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 					var html = response;
 					$('#skill_row_' + currentSkillId + ' .ratings .new_ratings').append(html);
 					$('.btn_delete').unbind('click').click(onDeleteRating);
+					$('.btn_clear').unbind('click').click(onClearRating);
 					if(whenDone)
 						whenDone();
 				});

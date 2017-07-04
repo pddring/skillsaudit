@@ -105,14 +105,15 @@ $skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT
 
 
 $context = context_module::instance($cm->id);
-$can_delete_rating = has_capability('mod/skillsaudit:deleteownrating', $context);
+$can_clear_rating = has_capability('mod/skillsaudit:editownrating', $context);
+$can_delete_rating = has_capability('mod/skillsaudit:deleterating', $context);
 
 foreach($skills as $skill) {
 	$html = '<div class="ratings">';
 	if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
 		foreach($ratings as $rating) {
 			$skill->confidence = $rating->confidence;
-			$html .= skillsaudit_get_rating_html($rating, $can_delete_rating);
+			$html .= skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating);
 		}
 		$html .= '<div class="new_ratings"></div>';
 		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';

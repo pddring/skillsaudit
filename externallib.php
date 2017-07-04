@@ -7,6 +7,42 @@ class mod_skillsaudit_external extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
+    public static function clear_rating_parameters() {
+        return new external_function_parameters(
+            array(
+				'cmid' => new external_value(PARAM_INT, 'course module id'),
+				'ratingid' => new external_value(PARAM_INT, 'confidence rating id')
+            )
+        );
+    }
+	
+	public static function clear_rating_returns() {
+        return new external_value(PARAM_INT, 'rating id deleted');
+    }
+	
+	public static function clear_rating($cmid, $ratingid) {
+		// check we have access rights to change skills
+		global $CFG, $USER, $DB;
+		
+		$params = self::validate_parameters(self::delete_rating_parameters(), array('cmid' => $cmid, 'ratingid' => $ratingid));
+		
+		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+		$context = context_module::instance($cm->id);
+		require_capability('mod/skillsaudit:editownrating', $context);
+				
+		if($result = $DB->get_record('skillsauditrating', array('userid'=>$user->id, 'id'=>$ratingid, 'auditid'=>$cm->instance))) {
+			$result->comment = "";
+			$DB->update_record('skillsauditrating', $result);
+		}
+		
+		return $ratingid;
+		
+	}
+	
+	/**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
     public static function delete_rating_parameters() {
         return new external_function_parameters(
             array(
@@ -28,15 +64,10 @@ class mod_skillsaudit_external extends external_api {
 		
 		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
 		$context = context_module::instance($cm->id);
-		require_capability('mod/skillsaudit:submit', $context);
+		require_capability('mod/skillsaudit:deleterating', $context);
 				
-		if($result = $DB->get_record('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance))) {
-			$result->comment = "";
-			$DB->update_record('skillsauditrating', $result);
-		}
-		
-		
-		return json_encode($ratingid);
+		$DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
+		return $ratingid;
 		
 	}
 	

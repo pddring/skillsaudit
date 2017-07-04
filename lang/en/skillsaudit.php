@@ -34,8 +34,8 @@ $string['modulename_help'] = '<p>A Skills audit allows students to rate their co
 $string['skillsaudit:addinstance'] = 'Add a new skillsaudit';
 $string['skillsaudit:submit'] = 'Submit skills audit';
 $string['skillsaudit:view'] = 'View skills audit';
-$string['skillsaudit:editownrating'] = 'Edit their own skills rating';
-$string['skillsaudit:deleteownrating'] = 'Delete their own skills rating';
+$string['skillsaudit:editownrating'] = 'Clear the comment from their own skills rating';
+$string['skillsaudit:deleterating'] = 'Delete anyone\'s skills rating';
 
 $string['skills'] = 'Skills';
 $string['skillsauditname'] = 'Skills audit name';

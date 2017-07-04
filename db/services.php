@@ -66,6 +66,17 @@ $functions = array(
         'classpath'   => 'mod/skillsaudit/externallib.php',  //file containing the class/external function
         'description' => 'Delete confidence rating',    //human readable description of the web service function
         'type'        => 'write',                  //database rights of the web service function (read, write)
+		'capabilities'=> 'mod/skillsaudit:deleterating',
+		'ajax'=>true
+    ),
+	
+		'mod_skillsaudit_clear_rating' => array(         //web service function name
+        'classname'   => 'mod_skillsaudit_external',  //class containing the external function
+        'methodname'  => 'clear_rating',          //external function name
+        'classpath'   => 'mod/skillsaudit/externallib.php',  //file containing the class/external function
+        'description' => 'Clear rating comment',    //human readable description of the web service function
+        'type'        => 'write',                  //database rights of the web service function (read, write)
+		'capabilities'=> 'mod/skillsaudit:editownrating',
 		'ajax'=>true
     ),
 );

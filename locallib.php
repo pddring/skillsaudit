@@ -28,17 +28,20 @@
 require_once("$CFG->libdir/weblib.php");
 defined('MOODLE_INTERNAL') || die();
 
-function skillsaudit_get_rating_html($rating, $can_delete_rating) {
+function skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating) {
 	$html = '';
 	$r = 180 - ($rating->confidence * 180.0 / 100.0);
 	$h = round($rating->confidence * 120.0 / 100.0);
 	$html .= '<div class="rating" id="rating_' . $rating->id .'"><span class="wrist"><span class="minithumb" style="transform: rotate(' . $r . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span><span class="rating_date">' . date("D jS M g:ia", $rating->timestamp) . '</span>';
 	if(strlen($rating->comment) > 0) {
 		$html .= '<div class="rating_comment">' . format_text($rating->comment, FORMAT_MOODLE, NULL, true);
-		if($can_delete_rating) {
-			$html .= '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
+		if($can_clear_rating) {
+			$html .= '<button class="btn_clear" id="btn_clear_' . $rating->id . '">' . get_string('clear') . '</button>';
 		}
 		$html .='</div>';
+	}
+	if($can_delete_rating) {
+		$html .= '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
 	}
 	$html .='</div>';
 	return $html;
