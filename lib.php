@@ -209,7 +209,8 @@ function skillsaudit_delete_instance($id) {
     }
 
     // Delete any dependent records here.
-
+	$DB->delete_records('skillsauditrating', array('auditid' => $skillsaudit->id));
+	$DB->delete_records('skillsinaudit', array('auditid' => $skillsaudit->id));
     $DB->delete_records('skillsaudit', array('id' => $skillsaudit->id));
 
     skillsaudit_grade_item_delete($skillsaudit);
@@ -373,7 +374,7 @@ function skillsaudit_scale_used_anywhere($scaleid) {
  * @param bool $reset reset grades in the gradebook
  * @return void
  */
-function skillsaudit_grade_item_update(stdClass $skillsaudit, $reset=false) {
+function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
@@ -392,12 +393,12 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $reset=false) {
         $item['gradetype'] = GRADE_TYPE_NONE;
     }
 
-    if ($reset) {
+    if ($grades === false) {
         $item['reset'] = true;
     }
 
     grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
-            $skillsaudit->id, 0, null, $item);
+            $skillsaudit->id, 0, $grades, $item);
 }
 
 /**

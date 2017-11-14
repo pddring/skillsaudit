@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 function skillsaudit_get_summary_html($cm, $userid){
 	global $DB;
 	// get all skills
+	$last_update = 0;
 	$all_skills = $DB->get_records_sql("SELECT id FROM {skills} WHERE courseid=?", array($cm->course));
 	foreach($all_skills as $skill) {
 		$skill->rated = false;
@@ -62,6 +63,9 @@ function skillsaudit_get_summary_html($cm, $userid){
 		if($rating->timestamp > $all_skills[$rating->skillid]->latesttimestamp) {
 			$all_skills[$rating->skillid]->latest = $rating->confidence;
 			$all_skills[$rating->skillid]->latesttimestamp = $rating->timestamp;
+			if($rating->timestamp > $last_update) {
+				$last_update = $rating->timestamp;
+			}
 		}
 	};
 	$target_id = -1;
@@ -131,6 +135,25 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>Total: <span class="summary_value">' . $total_score . '%</span></h3></div>';
 	
 	$html .= '<h3>Suggested target:</h3>' . $target;
+	
+	// update grade
+	$grade = new stdClass;
+	$grade->dategraded = time();
+	$grade->datesubmitted = $lastupdate;
+	$grade->rawgrade = $latest_total_confidence;
+	$grade->userid = $userid;
+	$grades = array($userid => $grade);
+	$audit = $DB->get_record('skillsaudit', array('id'=>$cm->instance));
+	skillsaudit_grade_item_update($audit, $grades);
+	
+	$item = array();
+    $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' min';
+    $item['gradetype'] = GRADE_TYPE_VALUE;
+	$item['grademax']  = $skillsaudit->grade;
+    
+	grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
+            $skillsaudit->id, 0, $grades, $item);
+			
 	return $html;
 }
 
