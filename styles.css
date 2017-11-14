@@ -98,8 +98,14 @@
 	display: inline-block;
 }
 
+.skill_number {
+	transition: all 2s;
+}
+
 .skill_included_yes {
 	background-image: url([[pix:skillsaudit|tick]]);
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
 .skill_included_no {
@@ -132,4 +138,36 @@
 }
 .conf_buttons {
 	text-align: center;
+}
+.skillsaudit_user_summary {
+	background-color: #fff;
+	border: solid 2px #000;
+	margin: 10px;
+	padding: 10px;
+	position: relative;
+}
+#total_score {
+	position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.target_number {
+	font-weight: bold;
+}
+
+.target_box {
+	background-color: #cfc;
+	padding: 10px;
+}
+
+.changed {
+	background-color: #cfc;
+}
+
+.other_topic {
+	background-color: #FC6;
+	text-align: center;
+	font-weight: bold;
 }

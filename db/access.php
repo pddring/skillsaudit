@@ -95,6 +95,7 @@ $capabilities = array(
             'student' => CAP_ALLOW,
         )
     ),
+
 	
 	'mod/skillsaudit:deleterating' => array(
         'riskbitmask' => RISK_SPAM,

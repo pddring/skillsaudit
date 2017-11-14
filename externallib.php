@@ -53,7 +53,12 @@ class mod_skillsaudit_external extends external_api {
     }
 	
 	public static function delete_rating_returns() {
-        return new external_value(PARAM_INT, 'rating id deleted');
+		return new external_single_structure(
+			array(
+				'summaryHtml' => new external_value(PARAM_RAW, 'Summary html'),
+				'ratingID' => new external_value(PARAM_INT, 'rating id deleted'),
+			)
+		);
     }
 	
 	public static function delete_rating($cmid, $ratingid) {
@@ -67,7 +72,10 @@ class mod_skillsaudit_external extends external_api {
 		require_capability('mod/skillsaudit:deleterating', $context);
 				
 		$DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
-		return $ratingid;
+		return array(
+			'ratingID' => $ratingid,
+			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id)
+		);
 		
 	}
 	
@@ -88,7 +96,12 @@ class mod_skillsaudit_external extends external_api {
     }
 	
 	public static function save_confidence_returns() {
-        return new external_value(PARAM_RAW, 'json test value');
+        return new external_single_structure(
+			array(
+				'summaryHtml' => new external_value(PARAM_RAW, 'Summary html'),
+				'ratingHtml' => new external_value(PARAM_RAW, 'Skill html'),
+			)
+		);
     }
 	
 	public static function save_confidence($courseid, $skillid, $confidence, $comment, $auditid) {
@@ -104,7 +117,8 @@ class mod_skillsaudit_external extends external_api {
 		
 		$cm = get_coursemodule_from_instance('skillsaudit', $auditid, $courseid, false, MUST_EXIST);
 		$context = context_module::instance($cm->id);
-		$can_delete_rating = has_capability('mod/skillsaudit:deleteownrating', $context);
+		$can_delete_rating = has_capability('mod/skillsaudit:deleterating', $context);
+		$can_clear_rating = has_capability('mod/skillsaudit:editownrating', $context);
 		
 		$createnew = true;
 		if($ratings = $DB->get_records('skillsauditrating', array('skillid'=>$skillid, 'auditid'=>$auditid, 'userid'=>$USER->id))) {
@@ -139,8 +153,11 @@ class mod_skillsaudit_external extends external_api {
 		
 		
 		$transaction->allow_commit();
-
-		return skillsaudit_get_rating_html($rating, $can_delete_rating);
+		$result = array(
+			'ratingHtml' => skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $cm->instance),
+			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id)
+		);
+		return $result;
 	}
  
     /**

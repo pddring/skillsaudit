@@ -110,10 +110,11 @@ $can_delete_rating = has_capability('mod/skillsaudit:deleterating', $context);
 
 foreach($skills as $skill) {
 	$html = '<div class="ratings">';
-	if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
+	//if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
+	if($ratings = $DB->get_records_sql('SELECT r.*, a.id AS auditid, a.name AS auditname FROM {skillsauditrating} AS r, {skillsaudit} AS a WHERE skillid=? AND userid=? AND auditid IN(SELECT id FROM {skillsaudit} WHERE COURSE=?) AND a.id=r.auditid ORDER BY timestamp ASC', array($skill->id, $USER->id, $cm->course))) {
 		foreach($ratings as $rating) {
 			$skill->confidence = $rating->confidence;
-			$html .= skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating);
+			$html .= skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $cm->instance);
 		}
 		$html .= '<div class="new_ratings"></div>';
 		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';
@@ -143,6 +144,9 @@ echo $OUTPUT->header();
 if ($skillsaudit->intro) {
     echo $OUTPUT->box(format_module_intro('skillsaudit', $skillsaudit, $cm->id), 'generalbox mod_introbox', 'skillsauditintro');
 }
+
+echo($OUTPUT->heading('Summary'));
+echo('<div class="skillsaudit_user_summary">' . skillsaudit_get_summary_html($cm, $USER->id) . '</div>');
 
 // Replace the following lines with you own code.
 echo $OUTPUT->heading('Skills');

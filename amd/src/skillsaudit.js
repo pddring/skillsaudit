@@ -22,9 +22,10 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 						}]);
 						
 						promises[0].done(function(response) {
-							if(response == id) {
+							if(response.ratingID == id) {
 								$('#rating_' + id).remove();
 							}
+							$('.skillsaudit_user_summary').html(response.summaryHtml);
 							
 							var confidence = $('#skill_row_' + currentSkillId + ' .minithumb').last().attr('data-confidence');
 							if(!confidence)
@@ -100,10 +101,11 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 				}]);
 				
 				promises[0].done(function(response) {
-					var html = response;
-					$('#skill_row_' + currentSkillId + ' .ratings .new_ratings').append(html);
+					$('#skill_row_' + currentSkillId + ' .ratings .new_ratings').append(response.ratingHtml);
+					$('#skill_row_' + currentSkillId + ' .skillnumber').addClass('skill_included_yes');
 					$('.btn_delete').unbind('click').click(onDeleteRating);
 					$('.btn_clear').unbind('click').click(onClearRating);
+					$('.skillsaudit_user_summary').html(response.summaryHtml);
 					if(whenDone)
 						whenDone();
 				});
@@ -130,9 +132,8 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			$('#btn_show_next').click(function(e) {
 				saveSkill(function() {
 					var rowId = $('#skill_row_' + currentSkillId).next().attr('id');
-					if(rowId === undefined) {
-						showAll();
-					} else {
+					showAll();
+					if(rowId) {
 						showSkill(rowId.replace('skill_row_', ''));
 					}
 				});
