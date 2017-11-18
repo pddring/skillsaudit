@@ -379,26 +379,50 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
     require_once($CFG->libdir.'/gradelib.php');
 
     $item = array();
-    $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS);
+    $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Confidence)';
+	
     $item['gradetype'] = GRADE_TYPE_VALUE;
-
-    if ($skillsaudit->grade > 0) {
-        $item['gradetype'] = GRADE_TYPE_VALUE;
-        $item['grademax']  = $skillsaudit->grade;
-        $item['grademin']  = 0;
-    } else if ($skillsaudit->grade < 0) {
-        $item['gradetype'] = GRADE_TYPE_SCALE;
-        $item['scaleid']   = -$skillsaudit->grade;
-    } else {
-        $item['gradetype'] = GRADE_TYPE_NONE;
+	$item['grademin'] = 0;
+	$item['grademax'] = 100;
+	if ($grades === false) {
+        $item['reset'] = true;
+		grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
+            $skillsaudit->id, 0, $grades, $item);	
+		
+		$item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Progress)';
+		grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
+            $skillsaudit->id, 1, $grades, $item);
+		
+		$item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Completed)';	
+		grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
+            $skillsaudit->id, 2, $grades, $item);		
+		
     }
+	
+	/*
+	$item = array('itemname'=>$cm->name . ' (Confidence)');    
+	ob_start();
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 0, $grades, NULL);
+	$item = array('itemname'=>$cm->name . ' (Progress)', 'grademin'=>-100);
+	$grade->rawgrade = $latest_total_confidence - $min_total_confidence;
+	$grades = array($userid => $grade);
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 1, $grades, $item);
+			
+	$item = array('itemname'=>$cm->name . ' (Completed)');
+	$grade->rawgrade = round(100*$rated_this_audit / $skills_count);
+	$grades = array($userid => $grade);
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 2, $grades, $item);
+	ob_end_clean();
+	*/
 
     if ($grades === false) {
         $item['reset'] = true;
     }
 
-    grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
-            $skillsaudit->id, 0, $grades, $item);
+
 }
 
 /**

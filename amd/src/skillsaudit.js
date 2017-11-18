@@ -32,6 +32,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 								confidence = 0;
 							var hue = Math.round(confidence * 120.0 / 100.0);
 							$('#conf_ind_' + currentSkillId).css({width: confidence + '%', background: 'linear-gradient(to right,red,hsl(' + hue  + ',100%,50%)'});
+							var ratingCount = $('#skill_row_' + currentSkillId).find('.rating').length;
+							$('#rating_stats_' + currentSkillId + ' .rating_count').text(ratingCount);
+							$('#skill_row_' + currentSkillId + ' .latest_rating_time').text('Last rated: today');
 							
 						});
 					});
@@ -106,6 +109,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 					$('.btn_delete').unbind('click').click(onDeleteRating);
 					$('.btn_clear').unbind('click').click(onClearRating);
 					$('.skillsaudit_user_summary').html(response.summaryHtml);
+					var ratingCount = $('#skill_row_' + currentSkillId).find('.rating').length;
+					$('#rating_stats_' + currentSkillId + ' .rating_count').text(ratingCount);
+					$('#skill_row_' + currentSkillId + ' .latest_rating_time').text('Last rated: today');
 					if(whenDone)
 						whenDone();
 				});

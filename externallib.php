@@ -56,7 +56,7 @@ class mod_skillsaudit_external extends external_api {
 		return new external_single_structure(
 			array(
 				'summaryHtml' => new external_value(PARAM_RAW, 'Summary html'),
-				'ratingID' => new external_value(PARAM_INT, 'rating id deleted'),
+				'ratingID' => new external_value(PARAM_INT, 'rating id deleted')
 			)
 		);
     }
@@ -99,7 +99,7 @@ class mod_skillsaudit_external extends external_api {
         return new external_single_structure(
 			array(
 				'summaryHtml' => new external_value(PARAM_RAW, 'Summary html'),
-				'ratingHtml' => new external_value(PARAM_RAW, 'Skill html'),
+				'ratingHtml' => new external_value(PARAM_RAW, 'Rating html')
 			)
 		);
     }
@@ -153,6 +153,17 @@ class mod_skillsaudit_external extends external_api {
 		
 		
 		$transaction->allow_commit();
+		
+		// update grades for other audits also using this skill
+		if($result = $DB->get_records('skillsinaudit', array('skillid'=>$rating->skillid))) {
+			foreach($result as $record) {
+				if($record->auditid != $rating->auditid) {
+					skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $record->auditid);
+				}
+			}
+		}
+		
+		
 		$result = array(
 			'ratingHtml' => skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $cm->instance),
 			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id)

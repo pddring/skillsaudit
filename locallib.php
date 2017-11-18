@@ -26,6 +26,7 @@
  */
 
 require_once("$CFG->libdir/weblib.php");
+require_once("$CFG->libdir/gradelib.php");
 defined('MOODLE_INTERNAL') || die();
 
 function skillsaudit_get_summary_html($cm, $userid){
@@ -91,6 +92,8 @@ function skillsaudit_get_summary_html($cm, $userid){
 		}
 		if($skill->rated) {
 			$rated_course++;
+		} else {
+			$target_id = $skill->id;
 		}
 		$min_course += $skill->min;
 		$max_course += $skill->max;
@@ -136,24 +139,31 @@ function skillsaudit_get_summary_html($cm, $userid){
 	
 	$html .= '<h3>Suggested target:</h3>' . $target;
 	
+	
 	// update grade
 	$grade = new stdClass;
 	$grade->dategraded = time();
-	$grade->datesubmitted = $lastupdate;
+	$grade->datesubmitted = $last_update;
 	$grade->rawgrade = $latest_total_confidence;
 	$grade->userid = $userid;
 	$grades = array($userid => $grade);
-	$audit = $DB->get_record('skillsaudit', array('id'=>$cm->instance));
-	skillsaudit_grade_item_update($audit, $grades);
 	
-	$item = array();
-    $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' min';
-    $item['gradetype'] = GRADE_TYPE_VALUE;
-	$item['grademax']  = $skillsaudit->grade;
-    
-	grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
-            $skillsaudit->id, 0, $grades, $item);
+	$item = array('itemname'=>$cm->name . ' (Confidence)');    
+	ob_start();
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 0, $grades, NULL);
+	$item = array('itemname'=>$cm->name . ' (Progress)');
+	$grade->rawgrade = $latest_total_confidence - $min_total_confidence;
+	$grades = array($userid => $grade);
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 1, $grades, $item);
 			
+	$item = array('itemname'=>$cm->name . ' (Completed)');
+	$grade->rawgrade = round(100*$rated_this_audit / $skills_count);
+	$grades = array($userid => $grade);
+	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
+            $cm->instance, 2, $grades, $item);
+	ob_end_clean();
 	return $html;
 }
 

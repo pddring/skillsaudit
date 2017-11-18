@@ -171,3 +171,7 @@
 	text-align: center;
 	font-weight: bold;
 }
+
+.latest_rating_time {
+	opacity: 0.5;
+}

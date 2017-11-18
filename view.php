@@ -110,11 +110,17 @@ $can_delete_rating = has_capability('mod/skillsaudit:deleterating', $context);
 
 foreach($skills as $skill) {
 	$html = '<div class="ratings">';
+	$skill->latest_rating = 0;
+	$skill->rating_count = 0;
 	//if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
 	if($ratings = $DB->get_records_sql('SELECT r.*, a.id AS auditid, a.name AS auditname FROM {skillsauditrating} AS r, {skillsaudit} AS a WHERE skillid=? AND userid=? AND auditid IN(SELECT id FROM {skillsaudit} WHERE COURSE=?) AND a.id=r.auditid ORDER BY timestamp ASC', array($skill->id, $USER->id, $cm->course))) {
 		foreach($ratings as $rating) {
 			$skill->confidence = $rating->confidence;
 			$html .= skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $cm->instance);
+			if($rating->timestamp > $skill->latest_rating) {
+				$skill->latest_rating = $rating->timestamp;
+			}
+			$skill->rating_count += 1;
 		}
 		$html .= '<div class="new_ratings"></div>';
 		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';
@@ -154,11 +160,46 @@ echo $OUTPUT->heading('Skills');
 // get all skills for this audit
 //$skills = $DB->get_records_sql('SELECT * FROM {skills} WHERE id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?)', array($cm->instance));
 
+function formatDateDiff($timestamp) { 
+    $start  = new DateTime();
+	$start->setTimestamp($timestamp);
+    
+    $end = new DateTime(); 
+	$end->setTimestamp(time());
+    
+    $interval = $end->diff($start); 
+	
+	$str = '';
+	if($interval->d == 0) {
+		$str = 'today';
+	} else {
+		if($interval->d >= 7) {
+			$weeks = floor($interval->d / 7);
+			$str = $weeks . " week" . ($weeks > 1?"s":"") . " ago";
+		} else {
+			$str = $interval->d . " day" . ($interval->d > 1?"s":"") . " ago";
+		}
+		
+	}
+	return $str;
+}
 
-echo('<table class="generaltable"><tr><th>Number</th><th>Skill</th><th>Confidence</th></tr>');
+echo('<table class="generaltable"><tr><th>Number</th><th>Skill</th><th>Ratings</th><th>Confidence</th></tr>');
 foreach($skills as $skill) {
 	$skill->hue = round($skill->confidence * 120.0 / 100.0);
-	echo('<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skillnumber">' . $skill->number . '</td><td>' . $skill->description . $skill->ratings .'</td><td><span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id .'" style="width:' . $skill->confidence . '%; background: linear-gradient(to right,red,hsl(' . $skill->hue .',100%,50%))"></span></span></td></tr>');
+	echo('<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skillnumber">' . $skill->number . '</td>');
+	echo('<td>' . $skill->description . $skill->ratings . '<div class="latest_rating_time">Last rated: ');
+	if($skill->rating_count > 0) {
+		echo(formatDateDiff($skill->latest_rating));
+	} else {
+		echo('never');
+	}
+	
+	echo('</div></td>');
+	echo('<td id="rating_stats_' . $skill->id . '">');
+	echo('<span class="rating_count">' . $skill->rating_count . '</span>');
+	echo('</td>');
+	echo('<td><span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id .'" style="width:' . $skill->confidence . '%; background: linear-gradient(to right,red,hsl(' . $skill->hue .',100%,50%))"></span></span></td></tr>');
 }
 echo('</table>');
 
