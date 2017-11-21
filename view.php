@@ -25,7 +25,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Replace skillsaudit with the name of your module and remove this line.
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once("$CFG->libdir/formslib.php");
@@ -108,6 +107,7 @@ $context = context_module::instance($cm->id);
 $can_clear_rating = has_capability('mod/skillsaudit:editownrating', $context);
 $can_delete_rating = has_capability('mod/skillsaudit:deleterating', $context);
 
+
 foreach($skills as $skill) {
 	$html = '<div class="ratings">';
 	$skill->latest_rating = 0;
@@ -144,10 +144,13 @@ $PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'viewinit', array('c
 
 // Output starts here.
 echo $OUTPUT->header();
+$can_track = has_capability('mod/skillsaudit:editownrating', $context);
+if($can_track) {
+	echo('<a href="track.php?id=' . $cm->id . '">Track students\'s progress</a>');
+}
 
-
-// Conditions to show the intro can change to look for own settings or whatever.
 if ($skillsaudit->intro) {
+	echo($OUTPUT->heading($cm->name));
     echo $OUTPUT->box(format_module_intro('skillsaudit', $skillsaudit, $cm->id), 'generalbox mod_introbox', 'skillsauditintro');
 }
 
@@ -219,6 +222,8 @@ echo('</table>');
       
       
 <?php
-
+if($can_track) {
+	echo('<a href="track.php?id=' . $cm->id . '">Track students\'s progress</a>');
+}
 // Finish the page.
 echo $OUTPUT->footer();

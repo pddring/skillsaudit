@@ -121,11 +121,13 @@
 	width: 50px;
 	height: 10px;
 	border: solid 1px #000;
+	positin: absolute;
 }
 
 .conf_ind {
-	display: inline-block;
+	display: block;
 	height: 10px;
+	width: 0px;
 	background-color: #F00;
 }
 
@@ -174,4 +176,38 @@
 
 .latest_rating_time {
 	opacity: 0.5;
+}
+
+.conf_ind_lowest {
+	position: relative;
+    height: 10px;
+    width: 10px;
+    background-color: #FFF;
+    transform: translateX(-50%) translateY(-20px) rotate(225deg);
+    border: 1px solid #000;
+    border-radius: 0px 5px 10px;
+}
+
+.conf_ind_status {
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: 0px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.conf_ind_status_yes {
+	background-image: url([[pix:skillsaudit|tick]]);
+}
+
+.conf_ind_status_no {
+	background-image: url([[pix:skillsaudit|cross]]);
+}
+
+.rating_td {
+	text-align: center;
+	position: relative;
 }

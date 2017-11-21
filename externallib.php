@@ -2,7 +2,32 @@
 require_once("$CFG->libdir/externallib.php");
 require_once(dirname(__FILE__).'/locallib.php');
 class mod_skillsaudit_external extends external_api {
- 
+ 	public static function update_tracker_parameters() {
+		return new external_function_parameters(
+			array(
+				'cmid' => new external_value(PARAM_INT, 'course module id'),
+				'groupid' => new external_value(PARAM_INT, 'group id'),
+				'highlight' => new external_value(PARAM_TEXT, 'skills to highlight')
+			)
+		);
+	}
+	
+	public static function update_tracker_returns() {
+		return new external_value(PARAM_RAW, 'HTML with summary of ratings');
+	}
+	
+	public static function update_tracker($cmid, $groupid, $highlight){
+		global $DB;
+		$params = self::validate_parameters(self::update_tracker_parameters(), array('cmid' => $cmid, 'groupid' => $groupid, 'highlight' => $highlight));
+		
+		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+		$context = context_module::instance($cm->id);
+		require_capability('mod/skillsaudit:trackratings', $context);
+		$group = $DB->get_record('groups', array('id' => $groupid));
+		$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?)', array($cm->instance));
+		return skillsaudit_get_tracking_table($cm, $group, $skills, $highlight);
+	}
+	
  	/**
      * Returns description of method parameters
      * @return external_function_parameters

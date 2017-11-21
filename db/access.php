@@ -98,8 +98,16 @@ $capabilities = array(
 
 	
 	'mod/skillsaudit:deleterating' => array(
-        'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+			'editingteacher' => CAP_ALLOW,
+        )
+    ),
+	
+	'mod/skillsaudit:trackratings' => array(
+        'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'manager' => CAP_ALLOW,

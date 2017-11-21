@@ -1,5 +1,25 @@
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], function($, ModalFactory, ModalEvents, ajax) {
     var mod = {
+		trackinit: function(course, skills, auditid, cmid) {
+			function update() {
+				var groupid = $('#select_group').val();
+				var highlight = $('input[name=highlight]:checked').val();
+				var promises = ajax.call([{
+					methodname: 'mod_skillsaudit_update_tracker',
+					args: {cmid: cmid, groupid: groupid, highlight: highlight}
+				}]);
+				
+				promises[0].done(function(response) {
+					$('#tracker_table').html(response);
+				});
+			}
+			$('#btn_update_progress_tracker').click(function() {
+				update();
+			});
+			$('#select_group').change(update);
+			$('input[name=highlight]').change(update);
+		},
+		
 		viewinit: function(course, skills, auditid, cmid) {
 			var i;
 			var confidence = 0;

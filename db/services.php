@@ -79,5 +79,15 @@ $functions = array(
 		'capabilities'=> 'mod/skillsaudit:editownrating',
 		'ajax'=>true
     ),
+	
+	'mod_skillsaudit_update_tracker' => array(         //web service function name
+        'classname'   => 'mod_skillsaudit_external',  //class containing the external function
+        'methodname'  => 'update_tracker',          //external function name
+        'classpath'   => 'mod/skillsaudit/externallib.php',  //file containing the class/external function
+        'description' => 'Get latest skill rating table',    //human readable description of the web service function
+        'type'        => 'read',                  //database rights of the web service function (read, write)
+		'capabilities'=> 'mod/skillsaudit:trackratings',
+		'ajax'=>true
+    ),
 );
 ?>

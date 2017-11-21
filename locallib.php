@@ -28,6 +28,91 @@
 require_once("$CFG->libdir/weblib.php");
 require_once("$CFG->libdir/gradelib.php");
 defined('MOODLE_INTERNAL') || die();
+function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
+	global $DB;
+	ob_start();	
+	$context = context_module::instance($cm->id);
+	$users = get_enrolled_users($context, 'mod/skillsaudit:submit', $group->id);
+	$course = $DB->get_record('course', array('id' => $cm->course));
+	require_login($course, true, $cm);
+	$grading_info = grade_get_grades($cm->course, 'mod', 'skillsaudit', $cm->instance, array_keys($users));
+	$html = '<table class="table"><thead>';
+	$html .= '<tr><th>Name</th><th>Confidence</th><th>Progress</th><th>Coverage</th>';
+	foreach($skills as $skill) {
+		$html .= '<th>. ' . $skill->number . '</th>';
+	}
+	$html .= '</thead></tr>';
+	$html .= '<tbody>';
+	$show_status = false;
+	if($highlight !== "") {
+		$show_status = true;
+	}
+	
+	foreach($users as $user) {
+		$confidence = $grading_info->items[0]->grades[$user->id];
+		$progress = $grading_info->items[1]->grades[$user->id];
+		$coverage = $grading_info->items[2]->grades[$user->id];
+		$html .= '<tr><td>' . $user->firstname . ' ' . $user->lastname . '</td>';
+		$html .= '<td>' . $confidence->str_grade . '%</td>';
+		$html .= '<td>' . $progress->str_grade . '%</td>';
+		$html .= '<td>' . $coverage->str_grade . '%</td>';
+		
+		foreach($skills as $skill) {
+			$rating = $DB->get_record_sql('SELECT id, confidence AS latest, timestamp, 
+				(SELECT confidence FROM {skillsauditrating} WHERE skillid=? AND userid=? ORDER BY confidence ASC LIMIT 1) AS lowest,
+				(SELECT COUNT(confidence) FROM {skillsauditrating} WHERE skillid=? AND userid=?) AS numratings
+				FROM {skillsauditrating}
+				WHERE skillid=? AND userid=?
+				ORDER BY timestamp DESC LIMIT 1', 
+				array($skill->id, $user->id, $skill->id, $user->id, $skill->id, $user->id));
+			$lowest_left = round($rating->lowest * 50 / 100);
+			
+			$diff = (time() - $rating->timestamp) / 86400;
+			
+	
+			$html .= '<td class="rating_td">';
+			
+			$status = "no";
+			if($highlight == "today") {
+				if($diff < 1) {
+					$status = "yes";
+				}
+			}
+			
+			if($highlight == "one") {
+				if($rating->numratings >=1) {
+					$status = "yes";
+				}
+			}
+			
+			if($highlight == "two") {
+				if($rating->numratings >=2) {
+					$status = "yes";
+				}
+			}
+			
+			if($show_status) {
+				$html .= '<div class="conf_ind_status conf_ind_status_' . $status . '"></div>';
+			}
+			
+			
+			$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
+			$latest_hue = 'hsl(' . round($rating->latest * 120.0 / 100.0) . ', 100%, 50%)';
+			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
+			$html .= '<span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id .'_' . $user->id . '" style="width:' . $rating->latest . '%; background: ' . $latest_hue . '"></span>';
+			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $lowest_left . ';background: ' . $lowest_hue . '"></div>';
+			
+			$html .= '</span>';
+			$html .= '</td>';
+		}
+		
+		$html .= '</tr>';
+	}
+	$html .= '</tbody>';
+	$html .= '</table>';
+	ob_end_clean();
+	return $html;
+}
 
 function skillsaudit_get_summary_html($cm, $userid){
 	global $DB;
@@ -152,6 +237,7 @@ function skillsaudit_get_summary_html($cm, $userid){
 	ob_start();
 	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
             $cm->instance, 0, $grades, NULL);
+			
 	$item = array('itemname'=>$cm->name . ' (Progress)');
 	$grade->rawgrade = $latest_total_confidence - $min_total_confidence;
 	$grades = array($userid => $grade);
