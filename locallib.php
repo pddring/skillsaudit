@@ -70,7 +70,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$diff = (time() - $rating->timestamp) / 86400;
 			
 	
-			$html .= '<td class="rating_td">';
+			$html .= '<td class="rating_td" data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">';
 			
 			$status = "no";
 			if($highlight == "today") {

@@ -18,6 +18,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			});
 			$('#select_group').change(update);
 			$('input[name=highlight]').change(update);
+			setInterval(update, 5000);
 		},
 		
 		viewinit: function(course, skills, auditid, cmid) {
