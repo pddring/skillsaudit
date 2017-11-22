@@ -36,10 +36,10 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$course = $DB->get_record('course', array('id' => $cm->course));
 	require_login($course, true, $cm);
 	$grading_info = grade_get_grades($cm->course, 'mod', 'skillsaudit', $cm->instance, array_keys($users));
-	$html = '<table class="table"><thead>';
+	$html = '<table class="rating_table table table-bordered"><thead>';
 	$html .= '<tr><th>Name</th><th>Confidence</th><th>Progress</th><th>Coverage</th>';
 	foreach($skills as $skill) {
-		$html .= '<th>. ' . $skill->number . '</th>';
+		$html .= '<th data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">. ' . $skill->number . '</th>';
 	}
 	$html .= '</thead></tr>';
 	$html .= '<tbody>';
@@ -272,12 +272,12 @@ function skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rat
 	if(strlen($rating->comment) > 0) {
 		$html .= '<div class="rating_comment">' . format_text($rating->comment, FORMAT_MOODLE, NULL, true);
 		if($can_clear_rating) {
-			$html .= '<button class="btn_clear" id="btn_clear_' . $rating->id . '">' . get_string('clear') . '</button>';
+			$html .= '<button class="btn btn-secondary btn_clear" id="btn_clear_' . $rating->id . '">' . get_string('clear') . '</button>';
 		}
 		$html .='</div>';
 	}
 	if($can_delete_rating) {
-		$html .= '<button class="btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
+		$html .= '<button class="btn btn-secondary btn_delete" id="btn_delete_' . $rating->id . '">' . get_string('delete') . '</button>';
 	}
 	$html .='</div>';
 	return $html;

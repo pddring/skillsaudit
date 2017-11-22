@@ -47,7 +47,7 @@ class confidence_rating_form extends moodleform {
 		$hueperoption = 120.0 / (count($options)-1);
 		foreach($options as $option) {
 			$option = trim($option);
-			$html  .= '<button class="btn_confidence btn_anim" id="btn_confidence_' . $i . '"><span class="wrist"><span class="thumb_small" style="transform: rotate(' . (180 - $r) . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span> ' . $option . ' </button>';
+			$html  .= '<button class="btn btn-primary btn_confidence btn_anim" id="btn_confidence_' . $i . '"><span class="wrist"><span class="thumb_small" style="transform: rotate(' . (180 - $r) . 'deg); background-color: hsl(' . $h . ',100%,50%)"></span></span> ' . $option . ' </button>';
 			$i++;
 			$r = round($r + $degperoption);
 			$h = round($h + $hueperoption);
@@ -58,9 +58,9 @@ class confidence_rating_form extends moodleform {
 		$mform->addElement('editor', 'comment', get_string("comment", "skillsaudit"));
 		$mform->setType('comment', PARAM_RAW);
 		
-		$mform->addElement('html', '<button id="btn_save_confidence">Save</button>
-      						<button id="btn_show_all">Cancel</button>
-      						<button id="btn_show_next">Save and show next</button></div>');
+		$mform->addElement('html', '<button class="btn btn-primary" id="btn_save_confidence">Save</button>
+      						<button class="btn btn-primary" id="btn_show_all">Cancel</button>
+      						<button class="btn btn-primary" id="btn_show_next">Save and show next</button></div>');
 	}
 }
 
@@ -123,7 +123,7 @@ foreach($skills as $skill) {
 			$skill->rating_count += 1;
 		}
 		$html .= '<div class="new_ratings"></div>';
-		$html .= '<button class="btn_hide_comments">Hide comments</button> <button class="btn_cancel">Cancel</button></div>';
+		$html .= '<button class="btn btn-primary btn_hide_comments">Hide comments</button> <button class="btn btn-primary btn_cancel">Cancel</button></div>';
 		$skill->ratings = $html;
 	
 		
@@ -144,9 +144,9 @@ $PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'viewinit', array('c
 
 // Output starts here.
 echo $OUTPUT->header();
-$can_track = has_capability('mod/skillsaudit:editownrating', $context);
+$can_track = has_capability('mod/skillsaudit:trackratings', $context);
 if($can_track) {
-	echo('<a href="track.php?id=' . $cm->id . '">Track students\'s progress</a>');
+	echo('<button class="btn btn-secondary"><a href="track.php?id=' . $cm->id . '"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</a></button>');
 }
 
 if ($skillsaudit->intro) {
@@ -223,7 +223,7 @@ echo('</table>');
       
 <?php
 if($can_track) {
-	echo('<a href="track.php?id=' . $cm->id . '">Track students\'s progress</a>');
+	echo('<button class="btn btn-secondary"><a href="track.php?id=' . $cm->id . '"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</a></button>');
 }
 // Finish the page.
 echo $OUTPUT->footer();

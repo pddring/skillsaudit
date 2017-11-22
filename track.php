@@ -96,9 +96,9 @@ foreach($skills as $skill) {
 
 // Output starts here.
 echo $OUTPUT->header();
-$can_track = has_capability('mod/skillsaudit:trackratings', $context);
-if($can_track) {
-	echo('<a href="view.php?id=' . $cm->id . '">Rate my confidence</a>');
+$can_view = has_capability('mod/skillsaudit:view', $context);
+if($can_view) {
+	echo('<button class="btn btn-secondary"><a href="view.php?id=' . $cm->id . '">Rate my confidence</a></button>');
 }
 
 // Conditions to show the intro can change to look for own settings or whatever.
@@ -148,4 +148,7 @@ foreach($groups as $group) {
 $html = skillsaudit_get_tracking_table($cm, $selectedgroup, $skills);
 echo($html);
 echo('</div>');
+if($can_view) {
+	echo('<button class="btn btn-secondary"><a href="view.php?id=' . $cm->id . '">Rate my confidence</a></button>');
+}
 echo $OUTPUT->footer();
