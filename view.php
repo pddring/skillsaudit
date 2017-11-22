@@ -146,7 +146,7 @@ $PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'viewinit', array('c
 echo $OUTPUT->header();
 $can_track = has_capability('mod/skillsaudit:trackratings', $context);
 if($can_track) {
-	echo('<button class="btn btn-secondary"><a href="track.php?id=' . $cm->id . '"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</a></button>');
+	echo('<a href="track.php?id=' . $cm->id . '"><button class="btn btn-secondary"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</button></a>');
 }
 
 if ($skillsaudit->intro) {
@@ -223,7 +223,7 @@ echo('</table>');
       
 <?php
 if($can_track) {
-	echo('<button class="btn btn-secondary"><a href="track.php?id=' . $cm->id . '"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</a></button>');
+	echo('<a href="track.php?id=' . $cm->id . '"><button class="btn btn-secondary"><span class="glyphicon glyphicon-signal"></span> Track students\' progress</button></a>');
 }
 // Finish the page.
 echo $OUTPUT->footer();

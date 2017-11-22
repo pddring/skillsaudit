@@ -98,7 +98,7 @@ foreach($skills as $skill) {
 echo $OUTPUT->header();
 $can_view = has_capability('mod/skillsaudit:view', $context);
 if($can_view) {
-	echo('<button class="btn btn-secondary"><a href="view.php?id=' . $cm->id . '">Rate my confidence</a></button>');
+	echo('<a href="view.php?id=' . $cm->id . '"><button class="btn btn-secondary">Rate my confidence</button></a>');
 }
 
 // Conditions to show the intro can change to look for own settings or whatever.
@@ -115,14 +115,32 @@ if($gmode == NOGROUPS) {
 }
 ?>
 
-<div class="form-group">
-<label class="radio-inline"><input type="radio" name="highlight" value="" checked> Just show ratings </label>
-<label class="radio-inline"><input type="radio" name="highlight" value="today"> Highlight ratings updated today </label>
-<label class="radio-inline"><input type="radio" name="highlight" value="one"> Highlight at least one rating </label>
-<label class="radio-inline"><input type="radio" name="highlight" value="two"> Highlight at least two ratings </label>
+<div class="form-group row">
+<div class="col-xs-2">
+<label for="autorefresh">Auto refresh:</label>
+<select class="form-control" id="autorefresh">
+ <option selected value="0">Never</option>
+ <option value="1">Every second</option>
+ <option value="5">Every 5 seconds</option>
+ <option value="30">Every 30 seconds</option>
+ <option value="60">Every minute</option>
+</select>
+</div>
 
+<div class="col-xs-2">
+<label for="highlight">Highlight:</label>
+<select class="form-control" id="highlight">
+ <option selected value="">No highlighting</option>
+ <option value="today">Skills rated today</option>
+ <option value="one">Skills with at least 1 rating</option>
+ <option value="two">Skills with at least 2 ratings</option>
+</select>
+</div>
+
+<div class="col-xs-3">
+<label for="select_group">Group:</label>
 <div class="input-group">
-
+	
     <select class="form-control width100" id="select_group">
       <?php
 $first = true;
@@ -141,6 +159,7 @@ foreach($groups as $group) {
         <button id="btn_update_progress_tracker" class="btn btn-info">Update</button>
     </span>
   </div>
+  </div>
   
   </div>
   <div id="tracker_table">
@@ -149,6 +168,6 @@ $html = skillsaudit_get_tracking_table($cm, $selectedgroup, $skills);
 echo($html);
 echo('</div>');
 if($can_view) {
-	echo('<button class="btn btn-secondary"><a href="view.php?id=' . $cm->id . '">Rate my confidence</a></button>');
+	echo('<a href="view.php?id=' . $cm->id . '"><button class="btn btn-secondary">Rate my confidence</button></a>');
 }
 echo $OUTPUT->footer();

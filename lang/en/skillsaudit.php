@@ -59,5 +59,5 @@ $string['confidencequestion'] = 'Question to ask when rating confidence';
 $string['defconfidencequestion'] = 'Confidence level';
 $string['confidenceoptions'] = 'Skill rating confidence options';
 $string['defconfidenceoptions'] = 'Very low, Low, Medium, High, Very high';
-$string['comment'] = 'Comment';
+$string['comment'] = 'Comment: State your target and describe what you\'ve done to meet it.';
 $string['error_missingid'] = 'Missing course module id or instance id';

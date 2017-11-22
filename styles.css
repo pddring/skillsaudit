@@ -49,7 +49,7 @@
 }
 .rating_comment {
 	margin: 10px;
-	background-color: #FF9;
+	background-color: #CFC;
 	padding: 10px;
 	box-shadow: 5px 5px 5px rgba(0,0,0,0.2);
 }
@@ -236,4 +236,8 @@
 
 .rating_table {
   overflow: hidden;
+}
+
+.text_confidence {
+	color: #999;
 }

@@ -28,6 +28,91 @@
 require_once("$CFG->libdir/weblib.php");
 require_once("$CFG->libdir/gradelib.php");
 defined('MOODLE_INTERNAL') || die();
+
+function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
+	global $DB;
+	ob_start();
+	if($skillid > 0) {
+		$ratings = $DB->get_records_sql("SELECT * FROM {skillsauditrating} WHERE skillid=? AND userid=? ORDER BY timestamp ASC", array($skillid, $userid));
+		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
+		$options = explode(",", $audit->options);
+		$num_options = count($options) - 1;
+		$html = '<table class="table"><thead><tr><th>Date:</th><th>Confidence:</th></tr></thead><tbody>';
+		foreach($ratings as $rating) {
+			$html .= '<tr><td>' . date("D jS M Y g:i a", $rating->timestamp) . '</td>';		
+			$html .= '<td>';
+			$hue = round($rating->confidence * 120.0 / 100.0);
+			$html .= '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $rating->confidence . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span>';
+			$i = round($rating->confidence * $num_options) / 100;
+			$text_confidence = $options[$i];
+			$html .= '<span class="text_confidence">' . $text_confidence . '</span>';
+			$html .= '</td></tr>';
+			if($rating->comment) {
+				$html .= '<td colspan="2"><div class="rating_comment">' . $rating->comment . '</div></td>';
+			}
+	
+		}
+
+	} else {
+		$ratings = $DB->get_records_sql("SELECT * FROM {skillsauditrating} WHERE skillid IN (SELECT skillid FROM {skillsinaudit} WHERE auditid=?) AND userid=? ORDER BY timestamp ASC", array($cm->instance, $userid));
+		$skills = $DB->get_records_sql("SELECT * FROM {skills} WHERE id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid=?)", array($cm->instance));
+		
+		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
+		$options = explode(",", $audit->options);
+		$num_options = count($options) - 1;
+		$html = '<table class="table"><thead><tr><th>Date:</th><th>Coverage:</th><th>Confidence:</th></tr></thead><tbody>';
+		
+		$coverage = 0;
+		$confidence = 0;
+		function update_stats(&$skills, $rating, &$confidence, &$coverage) {
+			$rated = 0;
+			$skillcount = 0;
+			$totalconfidence = 0;
+			foreach($skills as $skill) {
+				$skillcount += 1;
+				if($rating->skillid == $skill->id) {
+					$skill->rated = true;
+					if($skill->latestdate < $rating->timestamp) {
+						$skill->latestconfidence = $rating->confidence;
+					}
+				}
+				if($skill->rated) {
+					$rated += 1;
+				}
+				$totalconfidence += $skill->latestconfidence;
+			}
+			$coverage = round($rated * 100 / $skillcount);
+			$confidence = round($totalconfidence / $skillcount);
+		}
+		
+		foreach($ratings as $rating) {
+			update_stats($skills, $rating, $confidence, $coverage);
+			$skill = $skills[$rating->skillid];
+			$html .= '<tr><td>' . date("D jS M Y g:i a", $rating->timestamp) . '</td>';		
+			$html .= '<td>';
+			$hue = round($coverage * 120.0 / 100.0);
+			$html .= '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $coverage . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span> ';
+			$html .= $coverage . '%';
+			$html .= '</td>';
+			
+			$html .= '<td>';
+			$hue = round($confidence * 120.0 / 100.0);
+			$html .= '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $confidence . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span> ';
+			$html .= $confidence . '%';
+			$html .= '</td></tr>';
+			if($rating->comment) {
+				$html .= '<td colspan="2"><span class="skillnumber">' . $skill->number . "</span> " . $skill->description;
+				$html .= '<div class="rating_comment">' . $rating->comment . '</div></td>';
+			}
+	
+		}
+
+	}
+		$html .= '</tbody></table>';
+	ob_end_clean();
+	return $html;
+}
+
 function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	global $DB;
 	ob_start();	
@@ -52,10 +137,10 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$confidence = $grading_info->items[0]->grades[$user->id];
 		$progress = $grading_info->items[1]->grades[$user->id];
 		$coverage = $grading_info->items[2]->grades[$user->id];
-		$html .= '<tr><td>' . $user->firstname . ' ' . $user->lastname . '</td>';
-		$html .= '<td>' . $confidence->str_grade . '%</td>';
-		$html .= '<td>' . $progress->str_grade . '%</td>';
-		$html .= '<td>' . $coverage->str_grade . '%</td>';
+		$html .= '<tr><td class="rating_td" id="rating_td_0_' . $user->id . '_name">' . $user->firstname . ' ' . $user->lastname . '</td>';
+		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_confidence">' . $confidence->str_grade . '%</td>';
+		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_progress">' . $progress->str_grade . '%</td>';
+		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_coverage">' . $coverage->str_grade . '%</td>';
 		
 		foreach($skills as $skill) {
 			$rating = $DB->get_record_sql('SELECT id, confidence AS latest, timestamp, 
@@ -70,7 +155,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$diff = (time() - $rating->timestamp) / 86400;
 			
 	
-			$html .= '<td class="rating_td" data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">';
+			$html .= '<td class="rating_td" id="rating_td_' . $skill->id .'_' . $user->id . '" data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">';
 			
 			$status = "no";
 			if($highlight == "today") {

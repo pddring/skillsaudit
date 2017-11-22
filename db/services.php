@@ -89,5 +89,15 @@ $functions = array(
 		'capabilities'=> 'mod/skillsaudit:trackratings',
 		'ajax'=>true
     ),
+	
+	'mod_skillsaudit_get_activity_summary' => array(         //web service function name
+        'classname'   => 'mod_skillsaudit_external',  //class containing the external function
+        'methodname'  => 'get_activity_summary',          //external function name
+        'classpath'   => 'mod/skillsaudit/externallib.php',  //file containing the class/external function
+        'description' => 'Get summary of activity for a skill or audit',    //human readable description of the web service function
+        'type'        => 'read',                  //database rights of the web service function (read, write)
+		'capabilities'=> 'mod/skillsaudit:trackratings',
+		'ajax'=>true
+    ),
 );
 ?>

@@ -2,6 +2,30 @@
 require_once("$CFG->libdir/externallib.php");
 require_once(dirname(__FILE__).'/locallib.php');
 class mod_skillsaudit_external extends external_api {
+	public static function get_activity_summary($cmid, $userid, $skillid) {
+		global $DB;
+		$params = self::validate_parameters(self::get_activity_summary_parameters(), array('cmid' => $cmid, 'userid' => $userid, 'skillid' => $skillid));
+		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+		$context = context_module::instance($cm->id);
+		require_capability('mod/skillsaudit:trackratings', $context);
+		
+		return skillsaudit_get_activity_summary($cm, $userid, $skillid);
+	}
+	
+	public static function get_activity_summary_parameters() {
+		return new external_function_parameters(
+			array(
+				'cmid' => new external_value(PARAM_INT, 'course module id'),
+				'userid' => new external_value(PARAM_INT, 'user id'),
+				'skillid' => new external_value(PARAM_INT, 'skill id')
+			)
+		);
+	}
+	
+	public static function get_activity_summary_returns() {
+		return new external_value(PARAM_RAW, 'HTML with activity summary');
+	}
+	
  	public static function update_tracker_parameters() {
 		return new external_function_parameters(
 			array(

@@ -1,9 +1,33 @@
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], function($, ModalFactory, ModalEvents, ajax) {
     var mod = {
 		trackinit: function(course, skills, auditid, cmid) {
+			function addSkillsEventHandlers() {
+				$('.rating_td').click(function(e) {
+					parts = e.currentTarget.id.split("_");
+					var userid = parts[3];
+					var skillid = parts[2];
+					$('#modal_activity_summary').remove();
+					ModalFactory.create({
+						type: ModalFactory.types.CANCEL,
+						title: 'Ratings',
+						body: '<div id="modal_activity_summary">Loading...</div>'
+					}).done(function(modal){
+						modal.show();
+						var promises = ajax.call([{
+							methodname: 'mod_skillsaudit_get_activity_summary',
+							args: {cmid: cmid, userid: userid, skillid: skillid}
+						}]);
+						
+						promises[0].done(function(response) {
+							$('#modal_activity_summary').html(response);
+						});
+					});
+				});
+			}
+			
 			function update() {
 				var groupid = $('#select_group').val();
-				var highlight = $('input[name=highlight]:checked').val();
+				var highlight = $('#highlight').val();
 				var promises = ajax.call([{
 					methodname: 'mod_skillsaudit_update_tracker',
 					args: {cmid: cmid, groupid: groupid, highlight: highlight}
@@ -11,14 +35,22 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 				
 				promises[0].done(function(response) {
 					$('#tracker_table').html(response);
+					addSkillsEventHandlers();
 				});
 			}
 			$('#btn_update_progress_tracker').click(function() {
 				update();
 			});
 			$('#select_group').change(update);
-			$('input[name=highlight]').change(update);
-			setInterval(update, 5000);
+			$('#highlight').change(update);
+			$('#autorefresh').change(function() {
+				var interval = $(this).val() * 1000;
+				clearInterval(mod.trackUpdateInterval);
+				if(interval > 0) {
+					mod.trackUpdateInterval = setInterval(update, interval);
+				}
+			});
+			addSkillsEventHandlers();
 		},
 		
 		viewinit: function(course, skills, auditid, cmid) {
@@ -28,7 +60,6 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/ajax'], funct
 			
 			function onDeleteRating(e) {
 				var id = e.currentTarget.id.replace("btn_delete_", "");
-				
 				ModalFactory.create({
 					type: ModalFactory.types.SAVE_CANCEL,
 					title: 'Confirm delete',
