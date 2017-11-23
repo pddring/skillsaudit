@@ -1,5 +1,3 @@
-<p>&nbsp;</p>
-<p>&nbsp;</p>
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -398,25 +396,6 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
             $skillsaudit->id, 2, $grades, $item);		
 		
     }
-	
-	/*
-	$item = array('itemname'=>$cm->name . ' (Confidence)');    
-	ob_start();
-	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
-            $cm->instance, 0, $grades, NULL);
-	$item = array('itemname'=>$cm->name . ' (Progress)', 'grademin'=>-100);
-	$grade->rawgrade = $latest_total_confidence - $min_total_confidence;
-	$grades = array($userid => $grade);
-	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
-            $cm->instance, 1, $grades, $item);
-			
-	$item = array('itemname'=>$cm->name . ' (Completed)');
-	$grade->rawgrade = round(100*$rated_this_audit / $skills_count);
-	$grades = array($userid => $grade);
-	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
-            $cm->instance, 2, $grades, $item);
-	ob_end_clean();
-	*/
 
     if ($grades === false) {
         $item['reset'] = true;
