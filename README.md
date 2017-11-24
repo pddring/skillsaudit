@@ -4,9 +4,9 @@ Moodle skills audit activity module
  The aim of this project is to allow students in a moodle course to be able to rate their confidence for a list of skills.
 
  ## Install instructions
-Download the [zip file](https://github.com/pddring/skillsaudit/archive/master.zip) and extract it
-Rename the folder skillsaudit-master to skillsaudit and place it in the mod folder of your moodle server files
-Log in as an administrator and go to the homepage of your moodle VLE. You'll be asked to install/update the new plugin.
+ - Download the [zip file](https://github.com/pddring/skillsaudit/archive/master.zip) and extract it
+ - Rename the folder skillsaudit-master to skillsaudit and place it in the mod folder of your moodle server files
+ - Log in as an administrator and go to the homepage of your moodle VLE. You'll be asked to install/update the new plugin.
  
  ## Desired functionality:
  Teachers should be able to:
