@@ -26,10 +26,10 @@
  */
 
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once('../../config.php');
 require_once("$CFG->libdir/formslib.php");
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
+require_once('lib.php');
+require_once('locallib.php');
 
 class confidence_rating_form extends moodleform {
 	function definition() {
