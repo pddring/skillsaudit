@@ -218,6 +218,24 @@ echo('</table>');
 	  $mform->display();
 	  
 	  ?>
+
+  <!-- Modal -->
+<div id="dlg" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="dlg_title">Skills</h4>
+      </div>
+      <div class="modal-body" id="dlg_body">        
+      </div>
+      <div class="modal-footer" id="dlg_footer">
+      </div>
+    </div>
+  </div>
+</div>
       
       
       
