@@ -31,6 +31,8 @@ defined('MOODLE_INTERNAL') || die();
 
 function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 	global $DB;
+	
+	$html = skillsaudit_get_summary_html($cm, $userid);
 	ob_start();
 	// specific skill
 	if($skillid > 0) {
@@ -38,7 +40,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
 		$options = explode(",", $audit->options);
 		$num_options = count($options) - 1;
-		$html = '<table class="table"><thead><tr><th>Date:</th><th>Confidence:</th></tr></thead><tbody>';
+		$html .= '<table class="table"><thead><tr><th>Date:</th><th>Confidence:</th></tr></thead><tbody>';
 		foreach($ratings as $rating) {
 			$html .= '<tr><td>' . date("D jS M Y g:i a", $rating->timestamp) . '</td>';		
 			$html .= '<td>';
@@ -64,7 +66,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
 		$options = explode(",", $audit->options);
 		$num_options = count($options) - 1;
-		$html = '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">Whole course:</th></tr><tr><th>Date:</th><th>Coverage:</th><th>Confidence:</th><th>Coverage:</th><th>Confidence:</th></tr></thead><tbody>';
+		$html .= '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">Whole course:</th></tr><tr><th>Date:</th><th>Completed:</th><th>Confidence:</th><th>Completed:</th><th>Confidence:</th></tr></thead><tbody>';
 		
 		$coverage = 0;
 		$confidence = 0;
@@ -127,7 +129,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		foreach($stats as $stat) {
 			//update_stats
 			$html .= '<tr><td>' . date("D jS M Y", $stat->date) . '</td>';		
-			$html .= '<td title="Coverate (This topic)">';
+			$html .= '<td title="Completed (This topic)">';
 			$html .= get_rating_html($stat->coverage);			
 			$html .= $stat->coverage . '%';
 			$html .= '</td>';
@@ -137,7 +139,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 			$html .= $stat->confidence . '%';
 			$html .= '</td>';
 			
-			$html .= '<td title="Coverage (Whole course)">';
+			$html .= '<td title="Completed (Whole course)">';
 			$html .= get_rating_html($stat->course_coverage);			
 			$html .= $stat->course_coverage . '%';
 			$html .= '</td>';
@@ -240,7 +242,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			if($show_status) {
 				$html .= '<div class="conf_ind_status conf_ind_status_' . $status . '"></div>';
 			}
-			
+			$html .= '<span class="num_ratings">' . $rating->numratings . '</span> ';
 			
 			
 			$latest_hue = 'hsl(' . round($rating->latest * 120.0 / 100.0) . ', 100%, 50%)';
@@ -248,8 +250,25 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
 			$html .= '<span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id . '_' . $user->id . '" style="width:' . $rating->latest . '%; background: ' . $latest_hue . '"></span>';
 			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $lowest_left . ';background: ' . $lowest_hue . '"></div>';
-			
+						
 			$html .= '</span>';
+			
+			$html .= '<div class="latest_rating_time">';
+			if($rating->timestamp > 0) { 
+				if($diff < 1) {
+					$i = round($diff * 24);
+					$html .= $i . ' hour' . ($i > 1?'s':'') . ' ago';
+				} else {
+					if($diff > 14) {
+						$i = round($diff / 24);
+						$html .= $i . ' week' . ($i > 1?'s':'') . ' ago';
+					} else {
+						$i = round($diff);
+						$html .= $i . ' day' . ($i > 1?'s':'') . ' ago';
+					}
+				} 
+			}
+			$html .= '</div>';
 			$html .= '</td>';
 		}
 		
@@ -366,10 +385,10 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$average_confidence_course = "from $min_course% to $max_course%. Latest: $latest_course";
 	
 	$html = '<h3>This topic:</h3>';
-	$html .= '<div id="percent_skills_rated"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated . '%</span></div>';
+	$html .= '<div id="percent_skills_rated"><span class="summary_label">Completed: </span><span class="summary_value">' . $percent_skills_rated . '%</span></div>';
 	$html .= '<div id="average_confidence"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence . '%</span></div>';
 	$html .= '<h3>Whole course:</h3>';	
-	$html .= '<div id="percent_skills_rated_course"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated_course . '%</span></div>';
+	$html .= '<div id="percent_skills_rated_course"><span class="summary_label">Completed: </span><span class="summary_value">' . $percent_skills_rated_course . '%</span></div>';
 	$html .= '<div id="average_confidence_course"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence_course . '%</span></div>';
 	
 	$target = '';

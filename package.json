@@ -1,3 +1,10 @@
 {
-   "name": "moodle-mod_skillsaudit"
+  "name": "moodle-mod_skillsaudit",
+  "version": "v1.0.0",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-less": "^1.4.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-load-gruntfile": "0.0.2"
+  }
 }
