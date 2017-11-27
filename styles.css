@@ -211,6 +211,10 @@
 	position: relative;
 }
 
+#tracker_table th {
+	background-color: #FFF;
+}
+
 .rating_td:hover::after { 
     background-color: #ffa;
     content: '';  

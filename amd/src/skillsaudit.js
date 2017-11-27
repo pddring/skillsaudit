@@ -32,6 +32,9 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				$('.rating_td').click(function(e) {
 					parts = e.currentTarget.id.split("_");
 					var userid = parts[3];
+					if(!userid) {
+						return;
+					}
 					var skillid = parts[2];
 					mod.showDialog("Summary", "Loading...");
 					var promises = ajax.call([{

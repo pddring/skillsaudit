@@ -66,7 +66,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
 		$options = explode(",", $audit->options);
 		$num_options = count($options) - 1;
-		$html .= '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">Whole course:</th></tr><tr><th>Date:</th><th>Completed:</th><th>Confidence:</th><th>Completed:</th><th>Confidence:</th></tr></thead><tbody>';
+		$html .= '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">Whole course:</th></tr><tr><th>Date:</th><th>Coverage:</th><th>Confidence:</th><th>Coverage:</th><th>Confidence:</th></tr></thead><tbody>';
 		
 		$coverage = 0;
 		$confidence = 0;
@@ -129,7 +129,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		foreach($stats as $stat) {
 			//update_stats
 			$html .= '<tr><td>' . date("D jS M Y", $stat->date) . '</td>';		
-			$html .= '<td title="Completed (This topic)">';
+			$html .= '<td title="Coverage (This topic)">';
 			$html .= get_rating_html($stat->coverage);			
 			$html .= $stat->coverage . '%';
 			$html .= '</td>';
@@ -139,7 +139,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 			$html .= $stat->confidence . '%';
 			$html .= '</td>';
 			
-			$html .= '<td title="Completed (Whole course)">';
+			$html .= '<td title="Coverage (Whole course)">';
 			$html .= get_rating_html($stat->course_coverage);			
 			$html .= $stat->course_coverage . '%';
 			$html .= '</td>';
@@ -176,11 +176,11 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$grading_info = grade_get_grades($cm->course, 'mod', 'skillsaudit', $cm->instance, array_keys($users));
 	$html = '<table class="rating_table table table-bordered"><thead>';
 	$html .= '<tr><th>Student</th><th colspan="3">This topic</th><th colspan="' . count($skills) . '">Individual skills</th><th colspan="2">Whole course</th></tr>';
-	$html .= '<tr><th>Name</th><th>Confidence</th><th>Progress</th><th>Completed</th>';
+	$html .= '<tr><th>Name</th><th>Confidence</th><th>Progress</th><th>Coverage</th>';
 	foreach($skills as $skill) {
 		$html .= '<th data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">. ' . $skill->number . '</th>';
 	}
-	$html .= '<th>Confidence</th><th>Completed</th>';
+	$html .= '<th>Confidence</th><th>Coverage</th>';
 	$html .= '</thead></tr>';
 	$html .= '<tbody>';
 	$show_status = false;
@@ -188,11 +188,27 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$show_status = true;
 	}
 	
+	$totals = array();
+	
+	function remember($name, &$totals, $value) {
+		if(array_key_exists($name, $totals)) {
+			$totals[$name] += $value;
+		} else {
+			$totals[$name] = $value;
+		}
+	}
+	
 	foreach($users as $user) {
 		$confidence = intval($grading_info->items[0]->grades[$user->id]->str_grade);
+		remember('confidence', $totals, $confidence);
+		
 		$progress = intval($grading_info->items[1]->grades[$user->id]->str_grade);
+		remember('progress', $totals, $progress);
+		
 		$coverage = intval($grading_info->items[2]->grades[$user->id]->str_grade);
-		$html .= '<tr><td class="rating_td" id="rating_td_0_' . $user->id . '_name">' . $user->firstname . ' ' . $user->lastname . '</td>';
+		remember('coverage', $totals, $coverage);
+		
+		$html .= '<tr><th class="rating_td" id="rating_td_0_' . $user->id . '_name">' . $user->firstname . ' ' . $user->lastname . '</th>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($confidence) . $confidence . '%</td>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_progress">' . get_rating_bar($progress) . $progress . '%</td>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($coverage) .$coverage . '%</td>';
@@ -244,7 +260,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			}
 			$html .= '<span class="num_ratings">' . $rating->numratings . '</span> ';
 			
-			
+			remember($skill->number, $totals, $rating->latest);
 			$latest_hue = 'hsl(' . round($rating->latest * 120.0 / 100.0) . ', 100%, 50%)';
 			$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
 			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
@@ -273,20 +289,32 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		}
 		
 		$total_confidence = intval($DB->get_field_sql('SELECT finalgrade FROM {grade_grades} WHERE userid=? AND itemid=(SELECT id FROM {grade_items} WHERE courseid=? AND itemtype=\'manual\' AND itemmodule=\'skillsaudit\' AND itemname=\'Total confidence\')', array($user->id, $cm->course)));
-		$total_completed = intval($DB->get_field_sql('SELECT finalgrade FROM {grade_grades} WHERE userid=? AND itemid=(SELECT id FROM {grade_items} WHERE courseid=? AND itemtype=\'manual\' AND itemmodule=\'skillsaudit\' AND itemname=\'Total completed\')', array($user->id, $cm->course)));
+		$total_coverage = intval($DB->get_field_sql('SELECT finalgrade FROM {grade_grades} WHERE userid=? AND itemid=(SELECT id FROM {grade_items} WHERE courseid=? AND itemtype=\'manual\' AND itemmodule=\'skillsaudit\' AND itemname=\'Total coverage\')', array($user->id, $cm->course)));
 		
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_totalconfidence">';
 		$html .= get_rating_bar($total_confidence);
+		remember('total_confidence', $totals, $total_confidence);
 		$html .= $total_confidence;
 		$html .= '%</td>';
 		
-		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_totalcompleted">';
-		$html .= get_rating_bar($total_completed);
-		$html .= $total_completed;
+		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_totalcoverage">';
+		$html .= get_rating_bar($total_coverage);
+		remember('total_coverage', $totals, $total_coverage);
+		$html .= $total_coverage;
 		$html .= '%</td>';
 		
 		$html .= '</tr>';
+		
 	}
+	
+	// add mean values
+	$html .= '<tr>';
+	$html .= '<th class="rating_td">Average</th>';
+	foreach(array_keys($totals) as $name) {
+		$average = round($totals[$name] / count($users));
+		$html .= '<td class="rating_td">' . get_rating_bar($average) . $average . '%</td>';
+	}
+	$html .= '</tr>';
 	$html .= '</tbody>';
 	$html .= '</table>';
 	ob_end_clean();
@@ -374,9 +402,9 @@ function skillsaudit_get_summary_html($cm, $userid){
 	
 	$percent_skills_rated = "$rated_this_audit / $skills_count = ". round(100*$rated_this_audit / $skills_count);
 	
-	$total_completed = round(100*$rated_course / $skills_count_course);
+	$total_coverage = round(100*$rated_course / $skills_count_course);
 	// percentage of skills rated (this course)
-	$percent_skills_rated_course = "$rated_course / $skills_count_course = " . $total_completed;
+	$percent_skills_rated_course = "$rated_course / $skills_count_course = " . $total_coverage;
 	
 	// average confidence (this audit)
 	$average_confidence = "from $min_total_confidence% to $max_total_confidence%. Latest: $latest_total_confidence";
@@ -385,10 +413,10 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$average_confidence_course = "from $min_course% to $max_course%. Latest: $latest_course";
 	
 	$html = '<h3>This topic:</h3>';
-	$html .= '<div id="percent_skills_rated"><span class="summary_label">Completed: </span><span class="summary_value">' . $percent_skills_rated . '%</span></div>';
+	$html .= '<div id="percent_skills_rated"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated . '%</span></div>';
 	$html .= '<div id="average_confidence"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence . '%</span></div>';
 	$html .= '<h3>Whole course:</h3>';	
-	$html .= '<div id="percent_skills_rated_course"><span class="summary_label">Completed: </span><span class="summary_value">' . $percent_skills_rated_course . '%</span></div>';
+	$html .= '<div id="percent_skills_rated_course"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated_course . '%</span></div>';
 	$html .= '<div id="average_confidence_course"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence_course . '%</span></div>';
 	
 	$target = '';
@@ -424,7 +452,7 @@ function skillsaudit_get_summary_html($cm, $userid){
 	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
             $cm->instance, 1, $grades, $item);
 			
-	$item = array('itemname'=>$cm->name . ' (Completed)');
+	$item = array('itemname'=>$cm->name . ' (Coverage)');
 	$grade->rawgrade = round(100*$rated_this_audit / $skills_count);
 	$grades = array($userid => $grade);
 	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
@@ -468,14 +496,14 @@ function skillsaudit_get_summary_html($cm, $userid){
 		$DB->insert_record('grade_grades', $grade);
 	}
 	
-	// check if total completed exists
-	if($id = $DB->get_field('grade_items', 'id', array('courseid'=>$cm->course, 'itemname'=>'Total completed', 'itemtype'=>'manual', 'itemmodule' => 'skillsaudit'))) {
+	// check if total coverage exists
+	if($id = $DB->get_field('grade_items', 'id', array('courseid'=>$cm->course, 'itemname'=>'Total coverage', 'itemtype'=>'manual', 'itemmodule' => 'skillsaudit'))) {
 	} else {	
 		$params = array(
 			'itemid' => $id,
 			'needsupdate' => 0,
 			'itemtype' => 'manual',
-			'itemname' => 'Total completed',
+			'itemname' => 'Total coverage',
 			'itemmodule' => 'skillsaudit',
 			'categoryid' => $categoryid,
 			'rawgrademin' => 0,
@@ -488,14 +516,14 @@ function skillsaudit_get_summary_html($cm, $userid){
 		$id = $DB->insert_record('grade_items', $grade);
 	}
 	if($grade = $DB->get_record('grade_grades', array('itemid' => $id, 'userid' => $userid))) {
-		$grade->finalgrade = $total_completed;
+		$grade->finalgrade = $total_coverage;
 		$grade->timemodified = time();
 		$DB->update_record('grade_grades', $grade);
 	} else {	
 		$grade = new stdClass();
 		$grade->itemid = $id;
 		$grade->userid = $userid;
-		$grade->finalgrade = $total_completed;
+		$grade->finalgrade = $total_coverage;
 		$grade->rawgrademax = 100;
 		$grade->rawgrademin = 0;
 		$grade->timecreated = time();
