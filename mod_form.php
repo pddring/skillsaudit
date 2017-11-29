@@ -75,7 +75,7 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
 		$mform->setDefault('confidence_options', get_string('defconfidenceoptions', 'skillsaudit'));
         
         $mform->addElement('header', 'h_skills', get_string('skills', 'skillsaudit'));
-		$skills = $DB->get_records('skills', array('courseid'=>$COURSE->id));
+		$skills = $DB->get_records('skills', array('courseid'=>$COURSE->id), 'number ASC');
 		
 		$html = '<h2>' . get_string('skillsinthiscourse', 'skillsaudit') . '</h2>';
 		$html .= '<table class="generaltable" id="tbl_skills"><tr><th>' . get_string('number', 'skillsaudit') . '</th>';

@@ -60,7 +60,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 	} else {
 		$stats = array();
 		$ratings = $DB->get_records_sql("SELECT * FROM {skillsauditrating} WHERE skillid IN (SELECT skillid FROM {skillsinaudit} WHERE auditid=?) AND userid=? ORDER BY timestamp ASC", array($cm->instance, $userid));
-		$skills = $DB->get_records_sql("SELECT * FROM {skills} WHERE id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid=?)", array($cm->instance));
+		$skills = $DB->get_records_sql("SELECT * FROM {skills} WHERE id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid=?)", array($cm->instance), 'number ASC');
 		$course_skills = $DB->get_records('skills', array('courseid' => $cm->course));
 		$course_ratings = $DB->get_records_sql("SELECT * FROM {skillsauditrating} WHERE skillid IN (SELECT id FROM {skills} WHERE courseid=?) AND userid=? ORDER BY timestamp ASC", array($cm->course, $userid));
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
