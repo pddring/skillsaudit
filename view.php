@@ -100,7 +100,7 @@ $PAGE->set_heading(format_string($course->fullname));
 
 */
 
-$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?)', array($cm->instance));
+$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?) ORDER BY s.number ASC', array($cm->instance));
 
 
 $context = context_module::instance($cm->id);

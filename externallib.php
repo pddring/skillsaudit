@@ -48,7 +48,7 @@ class mod_skillsaudit_external extends external_api {
 		$context = context_module::instance($cm->id);
 		require_capability('mod/skillsaudit:trackratings', $context);
 		$group = $DB->get_record('groups', array('id' => $groupid));
-		$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?) ORDER BY name ASC', array($cm->instance));
+		$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?) ORDER BY number ASC', array($cm->instance));
 		return skillsaudit_get_tracking_table($cm, $group, $skills, $highlight);
 	}
 	
