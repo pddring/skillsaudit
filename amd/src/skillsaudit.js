@@ -166,7 +166,8 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 			
 			function saveSkill(whenDone) {
 				var hue = Math.round(confidence * 120.0 / 100.0);
-				$('#conf_ind_' + currentSkillId).css({width: confidence + '%', background: 'linear-gradient(to right,red,hsl(' + hue  + ',100%,50%)'});
+				$('#conf_ind_' + currentSkillId).css({width: confidence + '%', background: 'linear-gradient(to right,red,hsl(' + hue  + ',100%,50%)'}).parent().attr('title', confidence + '%');
+				
 				skills[currentSkillId].confidence = confidence;
 				var comment = $('#id_comment').val();
 				var promises = ajax.call([{

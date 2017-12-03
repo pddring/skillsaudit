@@ -45,7 +45,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 			$html .= '<tr><td>' . date("D jS M Y g:i a", $rating->timestamp) . '</td>';		
 			$html .= '<td>';
 			$hue = round($rating->confidence * 120.0 / 100.0);
-			$html .= '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $rating->confidence . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span>';
+			$html .= '<span class="conf_ind_cont" title="' . $rating->confidence . '%"><span class="conf_ind" style="width:' . $rating->confidence . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span>';
 			$i = round($rating->confidence * $num_options) / 100;
 			$text_confidence = $options[$i];
 			$html .= '<span class="text_confidence">' . $text_confidence . '</span>';
@@ -100,7 +100,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		
 		function get_rating_html($percentage) {
 			$hue = round($percentage * 120.0 / 100.0);
-			$html = '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $percentage . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span> ';
+			$html = '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: linear-gradient(to right,red,hsl(' . $hue .',100%,50%))"></span></span> ';
 			return $html;
 		}
 		
@@ -165,7 +165,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	function get_rating_bar($percentage) {
 		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
-		return '<span class="conf_ind_cont"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';
+		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';
 	}
 	global $DB;
 	ob_start();	
@@ -265,7 +265,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
 			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
 			$html .= '<span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id . '_' . $user->id . '" style="width:' . $rating->latest . '%; background: ' . $latest_hue . '"></span>';
-			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $lowest_left . ';background: ' . $lowest_hue . '"></div>';
+			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $lowest_left . '%;background: ' . $lowest_hue . '"></div>';
 						
 			$html .= '</span>';
 			
@@ -371,36 +371,42 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$max_course = 0;
 	$latest_course = 0;
 	$lowest_confidence = 100;
+	$chosen_unrated_target = false;
+	//$debug = '';
 	foreach($all_skills as $skill) {
 		if($skill->rated && $skill->inthisaudit) {
 			if($skill->latest < $lowest_confidence) {
 				$target_id = $skill->id;
 				$lowest_confidence = $skill->latest;
+				$min_total_confidence += $skill->min;
 			}
 			$rated_this_audit++;
-			$min_total_confidence += $skill->min;
 			$max_total_confidence += $skill->max;
 			$latest_total_confidence += $skill->latest;
 		}
 		if($skill->rated) {
 			$rated_course++;
+			$min_course += $skill->min;
 		} else {
-			$target_id = $skill->id;
+			if($skill->inthisaudit && !$chosen_unrated_target) {
+				$target_id = $skill->id;
+				$chosen_unrated_target = true;
+			}
 		}
-		$min_course += $skill->min;
 		$max_course += $skill->max;
 		$latest_course += $skill->latest;
+		//$debug .= print_r($skill, true);
 	}
 	$min_total_confidence = $rated_this_audit == 0?0:round($min_total_confidence / $rated_this_audit);
 	$max_total_confidence = $rated_this_audit == 0?0:round($max_total_confidence / $rated_this_audit);
 	$latest_total_confidence = $rated_this_audit == 0?0:round($latest_total_confidence / $rated_this_audit);
-	
+
 	$min_course = $rated_course == 0?0:round($min_course / $rated_course);
 	$max_course = $rated_course == 0?0:round($max_course / $rated_course);
 	$total_score = $rated_course == 0?0:round($latest_course / $skills_count_course);
 	$latest_course = $rated_course == 0?0:round($latest_course / $rated_course);
 	
-	$percent_skills_rated = "$rated_this_audit / $skills_count = ". round(100*$rated_this_audit / $skills_count);
+	$percent_skills_rated = "$rated_this_audit / $skills_count = ". ($skills_count > 0?round(100*$rated_this_audit / $skills_count):0);
 	
 	$total_coverage = round(100*$rated_course / $skills_count_course);
 	// percentage of skills rated (this course)
@@ -408,16 +414,17 @@ function skillsaudit_get_summary_html($cm, $userid){
 	
 	// average confidence (this audit)
 	$average_confidence = "from $min_total_confidence% to $max_total_confidence%. Latest: $latest_total_confidence";
-	
+
 	// average confidence (this course)
 	$average_confidence_course = "from $min_course% to $max_course%. Latest: $latest_course";
 	
 	$html = '<h3>This topic:</h3>';
 	$html .= '<div id="percent_skills_rated"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated . '%</span></div>';
-	$html .= '<div id="average_confidence"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence . '%</span></div>';
+	$html .= '<div id="average_confidence"><span class="summary_label">Average Confidence: </span><span class="summary_value">' . $average_confidence . '%</span></div>';
 	$html .= '<h3>Whole course:</h3>';	
 	$html .= '<div id="percent_skills_rated_course"><span class="summary_label">Coverage: </span><span class="summary_value">' . $percent_skills_rated_course . '%</span></div>';
-	$html .= '<div id="average_confidence_course"><span class="summary_label">Confidence: </span><span class="summary_value">' . $average_confidence_course . '%</span></div>';
+
+	$html .= '<div id="average_confidence_course"><span class="summary_label">Average Confidence: </span><span class="summary_value">' . $average_confidence_course . '%</span></div>';
 	
 	$target = '';
 	if($target_id > -1) {
@@ -431,7 +438,7 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>Total: <span class="summary_value">' . $total_score . '%</span></h3></div>';
 	
 	$html .= '<h3>Suggested target:</h3>' . $target;
-	
+//	$html .= '<pre>' . $debug . '</pre>';
 	
 	// update grade
 	$grade = new stdClass;
@@ -453,7 +460,7 @@ function skillsaudit_get_summary_html($cm, $userid){
             $cm->instance, 1, $grades, $item);
 			
 	$item = array('itemname'=>$cm->name . ' (Coverage)');
-	$grade->rawgrade = round(100*$rated_this_audit / $skills_count);
+	$grade->rawgrade = ($skills_count > 0?round(100*$rated_this_audit / $skills_count):0);
 	$grades = array($userid => $grade);
 	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
             $cm->instance, 2, $grades, $item);

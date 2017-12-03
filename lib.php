@@ -201,7 +201,6 @@ function skillsaudit_refresh_events($courseid = 0) {
  */
 function skillsaudit_delete_instance($id) {
     global $DB;
-
     if (! $skillsaudit = $DB->get_record('skillsaudit', array('id' => $id))) {
         return false;
     }
@@ -212,7 +211,6 @@ function skillsaudit_delete_instance($id) {
     $DB->delete_records('skillsaudit', array('id' => $skillsaudit->id));
 
     skillsaudit_grade_item_delete($skillsaudit);
-
     return true;
 }
 

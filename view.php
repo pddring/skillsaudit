@@ -25,7 +25,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once('../../config.php');
 require_once("$CFG->libdir/formslib.php");
 require_once('lib.php');
@@ -112,6 +111,7 @@ foreach($skills as $skill) {
 	$html = '<div class="ratings">';
 	$skill->latest_rating = 0;
 	$skill->rating_count = 0;
+	$skill->ratings = '';
 	//if($ratings = $DB->get_records('skillsauditrating', array('auditid'=>$cm->instance, 'skillid'=>$skill->id, 'userid'=>$USER->id), 'timestamp ASC')) {
 	if($ratings = $DB->get_records_sql('SELECT r.*, a.id AS auditid, a.name AS auditname FROM {skillsauditrating} AS r, {skillsaudit} AS a WHERE skillid=? AND userid=? AND auditid IN(SELECT id FROM {skillsaudit} WHERE COURSE=?) AND a.id=r.auditid ORDER BY timestamp ASC', array($skill->id, $USER->id, $cm->course))) {
 		foreach($ratings as $rating) {
@@ -122,15 +122,13 @@ foreach($skills as $skill) {
 			}
 			$skill->rating_count += 1;
 		}
-		$html .= '<div class="new_ratings"></div>';
-		$html .= '<button class="btn btn-primary btn_hide_comments">Hide comments</button> <button class="btn btn-primary btn_cancel">Cancel</button></div>';
-		$skill->ratings = $html;
-	
 		
 	} else {
 		$skill->confidence = 0;
 	}
-	
+	$html .= '<div class="new_ratings"></div>';
+	$html .= '<button class="btn btn-primary btn_hide_comments">Hide comments</button> <button class="btn btn-primary btn_cancel">Cancel</button></div>';
+	$skill->ratings = $html;
 }
 
 $PAGE->requires->js_call_amd('mod_skillsaudit/skillsaudit', 'viewinit', array('course'=>$COURSE->id, 'skills'=>$skills, 'auditid'=>$cm->instance, 'cmid'=>$cm->id));
@@ -202,7 +200,7 @@ foreach($skills as $skill) {
 	echo('<td id="rating_stats_' . $skill->id . '">');
 	echo('<span class="rating_count">' . $skill->rating_count . '</span>');
 	echo('</td>');
-	echo('<td><span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id .'" style="width:' . $skill->confidence . '%; background: linear-gradient(to right,red,hsl(' . $skill->hue .',100%,50%))"></span></span></td></tr>');
+	echo('<td><span class="conf_ind_cont" title="' . $skill->confidence . '%"><span class="conf_ind" id="conf_ind_' . $skill->id .'" style="width:' . $skill->confidence . '%; background: linear-gradient(to right,red,hsl(' . $skill->hue .',100%,50%))"></span></span></td></tr>');
 }
 echo('</table>');
 
