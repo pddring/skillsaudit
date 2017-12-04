@@ -248,3 +248,13 @@
 .rating_table th {
 	text-align: center;
 }
+
+.target_icon{
+	background-image: url([[pix:skillsaudit|target]]);
+	width: 50px;
+    height: 50px;
+    display: inline-block;
+    float: left;
+    padding: 10px;
+    margin: 10px;
+}

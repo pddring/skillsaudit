@@ -95,7 +95,7 @@ class mod_skillsaudit_mod_form extends moodleform_mod {
 		}
 		
 		foreach($skills as $skill) {
-			$html .= '<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skill_number">' . $skill->number . '</td><td class="skill_description">' . $skill->description . '</td><td>';
+			$html .= '<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skill_number"><a class="skill_help_link" href="'  . $skill->link . '" target="_blank">' . $skill->number . '</a></td><td class="skill_description">' . $skill->description . '</td><td>';
 			if(array_key_exists($skill->id, $skills_included)) {
 				$html .= '<span id="skill_included_' . $skill->id . '" class="skill_included skill_included_yes"></span></td></tr>';
 				$ids[] = $skill->id;

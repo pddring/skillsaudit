@@ -64,8 +64,22 @@ function xmldb_skillsaudit_upgrade($oldversion) {
 		// Skillsaudit savepoint reached.
 		upgrade_mod_savepoint(true, 2017061300, 'skillsaudit');
 	}
+	
+	// add link for each skill 
+	if ($oldversion < 2017120400) {
 
+		// Define field options to be added to skillsaudit.
+		$table = new xmldb_table('skills');
+		$field = new xmldb_field('link', XMLDB_TYPE_TEXT, null, null, null, null, null, 'description');
 
+		// Conditionally launch add field options.
+		if (!$dbman->field_exists($table, $field)) {
+			$dbman->add_field($table, $field);
+		}
+		
+		// Skillsaudit savepoint reached.
+		upgrade_mod_savepoint(true, 2017120400, 'skillsaudit');
+	}
 
 
 

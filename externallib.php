@@ -367,7 +367,8 @@ class mod_skillsaudit_external extends external_api {
 				'courseid' => new external_value(PARAM_INT, 'id of course'),
                 'skillid' =>  new external_value(PARAM_INT, 'id of skill'),
 				'number' => new external_value(PARAM_TEXT, 'Spec. number'),
-				'description' => new external_value(PARAM_TEXT, 'Description of the skill')
+				'description' => new external_value(PARAM_TEXT, 'Description of the skill'),
+				'link' => new external_value(PARAM_URL, 'help link')
             )
         );
     }
@@ -376,11 +377,11 @@ class mod_skillsaudit_external extends external_api {
         return new external_value(PARAM_INT, '1 on success');
     }
 	
-	public static function edit_skill($courseid, $skillid, $number, $description) {
+	public static function edit_skill($courseid, $skillid, $number, $description, $link) {
 		// check we have access rights to change skills
 		global $CFG, $USER, $DB;
 		
-		$params = self::validate_parameters(self::edit_skill_parameters(), array('courseid' => $courseid, 'skillid' => $skillid, 'number'=>$number, 'description'=>$description));
+		$params = self::validate_parameters(self::edit_skill_parameters(), array('courseid' => $courseid, 'skillid' => $skillid, 'number'=>$number, 'description'=>$description, 'link'=>$link));
 		
 		$transaction = $DB->start_delegated_transaction();
 		
@@ -391,6 +392,7 @@ class mod_skillsaudit_external extends external_api {
 		$skill = $DB->get_record('skills', array('courseid'=>$courseid, 'id'=>$skillid));
 		$skill->number = $number;
 		$skill->description = $description;
+		$skill->link = $link;
 		$DB->update_record('skills', $skill);
 		$transaction->allow_commit();
 		

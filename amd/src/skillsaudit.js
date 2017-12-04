@@ -316,18 +316,20 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				var id = t.attr('id').replace('skill_row_', '');
 				var number = t.find('.skill_number').text();
 				var desc = t.find('.skill_description').text();
-				mod.showDialog("Edit skill", '<h3>Note:</h3>Editing a skill here will affect all skills audits that include that skill in this course<div class="form-group"><label for="skill_edit_number"><h4>Spec. number:</h4></label><input class="form-control" id="skill_edit_number" value="' + number + '"></div><div class="form-group"><label for="skill_edit_description"><h4>Description:</h4></label><input class="form-control" id="skill_edit_description" value="' + desc + '"><h3>Warning</h3>Deleting this skill cannot be undone. It will remove the skill from this audit and any others in this course.', null, [
+				var link = t.find('.skill_help_link').attr('href');
+				mod.showDialog("Edit skill", '<h3>Note:</h3>Editing a skill here will affect all skills audits that include that skill in this course<div class="form-group"><label for="skill_edit_number"><h4>Spec. number:</h4></label><input class="form-control" id="skill_edit_number" value="' + number + '"></div><div class="form-group"><label for="skill_edit_description"><h4>Description:</h4></label><input class="form-control" id="skill_edit_description" value="' + desc + '"><label for="skill_edit_link"><h4>Help link:</h4></label><input class="form-control" id="skill_edit_link" value="' + link + '"><h3>Warning</h3>Deleting this skill cannot be undone. It will remove the skill from this audit and any others in this course.', null, [
 					{
 						id: 'save', text: 'Save', close:true, onClick: function() {
 							desc = $('#skill_edit_description').val();
 							number = $('#skill_edit_number').val();
+							helpLink = $('#skill_edit_link').val();
 							var promises = ajax.call([{
 								methodname: 'mod_skillsaudit_edit_skill',
-								args: {courseid: course, skillid: id, number: number, description: desc}
+								args: {courseid: course, skillid: id, number: number, description: desc, link:helpLink}
 							}]);
 							promises[0].done(function(response) {
-								t.find('.skill_number').text(number);
 								t.find('.skill_description').text(desc);
+								t.find('.skill_help_link').attr('href', helpLink).text(number);
 							});
 						}
 					}, 
@@ -387,7 +389,7 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 								// add new skills to list option
 								var tbl = $('#tbl_skills');
 								$.each(response, function(i, skill) {
-									tbl.append('<tr class="skill_row" id="skill_row_' + skill.id + '"><td class="skill_number">' + skill.number + '</td><td class="skill_description">' + skill.description + '</td><td><span id="skill_included_' + skill.id + '" class="skill_included_yes skill_included"></span></td></tr>');
+									tbl.append('<tr class="skill_row" id="skill_row_' + skill.id + '"><td class="skill_number"><a class="skill_help_link" href="">' + skill.number + '</a></td><td class="skill_description">' + skill.description + '</td><td><span id="skill_included_' + skill.id + '" class="skill_included_yes skill_included"></span></td></tr>');
 									$('#skill_included_' + skill.id).click(onSkillClick);
 									$('#skill_row_' + skill.id).dblclick(onSkillDblClick);
 								});

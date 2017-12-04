@@ -30,6 +30,7 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the course the skill applies to"/>
         <FIELD NAME="number" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="Skill reference ID from specification or scheme of work (e.g. 2.1)"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the skill"/>
+		<FIELD NAME="link" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Link to more info about this skill"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
