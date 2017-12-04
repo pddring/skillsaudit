@@ -433,7 +433,7 @@ function skillsaudit_get_summary_html($cm, $userid){
 		if($r_target->link) {
 			$help .= '<a class="info_icon" href="' . $r_target->link . '" target="_blank"><button class="btn btn-secondary">Help me</button></a>';
 		}
-		$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $r_target->number . '</span> <span class="target_description">' . $r_target->description . '</span>' . $help . '</div>';
+		$target = '<div class="target_box"><div class="target_icon_outer"><div class="target_icon"></div></div><span class="target_number">' . $r_target->number . '</span> <span class="target_description">' . $r_target->description . '</span>' . $help . '</div>';
 	}	
 	
 	$h = 120 * $total_score / 100;

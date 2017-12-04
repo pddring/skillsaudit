@@ -251,10 +251,14 @@
 
 .target_icon{
 	background-image: url([[pix:skillsaudit|target]]);
+	background-repeat: no-repeat;
 	width: 50px;
     height: 50px;
     display: inline-block;
     float: left;
     padding: 10px;
     margin: 10px;
+}
+.target_icon_outer{
+	display:inline-block;
 }
