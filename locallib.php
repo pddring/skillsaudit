@@ -431,9 +431,9 @@ function skillsaudit_get_summary_html($cm, $userid){
 		$r_target = $DB->get_record('skills', array('id'=>$target_id));
 		$help = '';
 		if($r_target->link) {
-			$help .= '<a class="info_icon" href="' . $r_target->link . '" target="_blank"><button class="btn btn-secondary">Help me</button></a>';
+			$help .= '<a title="Click here for more info" href="' . $r_target->link . '" target="_blank"><span class="info_icon"></span></a>';
 		}
-		$target = '<div class="target_box"><div class="target_icon_outer"><div class="target_icon"></div></div><span class="target_number">' . $r_target->number . '</span> <span class="target_description">' . $r_target->description . '</span>' . $help . '</div>';
+		$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $r_target->number . '</span> <span class="target_description">' . $r_target->description . '</span>' . $help . '</div>';
 	}	
 	
 	$h = 120 * $total_score / 100;

@@ -127,6 +127,9 @@ foreach($skills as $skill) {
 		$skill->confidence = 0;
 	}
 	$html .= '<div class="new_ratings"></div>';
+	if($skill->link) {
+		$html .= '<a target="_blank" href="' . $skill->link . '" title="Click here for more info"><span class="info_icon"></span></a>';
+	}
 	$html .= '<button class="btn btn-primary btn_hide_comments">Hide comments</button> <button class="btn btn-primary btn_cancel">Cancel</button></div>';
 	$skill->ratings = $html;
 }

@@ -161,6 +161,7 @@
 .target_box {
 	background-color: #cfc;
 	padding: 10px;
+	overflow: auto;
 }
 
 .changed {
@@ -259,6 +260,19 @@
     padding: 10px;
     margin: 10px;
 }
-.target_icon_outer{
-	display:inline-block;
+.info_icon {
+	background-image: url([[pix:skillsaudit|info]]);
+	background-repeat: no-repeat;
+	background-size: cover;
+	width: 2em;
+    height: 2em;
+    float: left;
+    margin: 10px;
+	background-color: #FFF;
+	border-radius: 100%;
+	transition: all 1s;
+}
+
+.info_icon:hover {
+	background-color: #FF3;
 }
