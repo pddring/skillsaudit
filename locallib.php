@@ -265,7 +265,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
 			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
 			$html .= '<span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id . '_' . $user->id . '" style="width:' . $rating->latest . '%; background: ' . $latest_hue . '"></span>';
-			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $lowest_left . '%;background: ' . $lowest_hue . '"></div>';
+			$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $rating->lowest . '%;background: ' . $lowest_hue . '"></div>';
 						
 			$html .= '</span>';
 			
