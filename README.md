@@ -1,6 +1,9 @@
 # skillsaudit
 Moodle skills audit activity module
 
+Please check the (wiki page)[https://github.com/pddring/skillsaudit/wiki] for instructions and background information.
+![screenhot](https://user-images.githubusercontent.com/760604/33797986-fd423c00-dd08-11e7-9888-a73f8adf52c7.png)
+
  The aim of this project is to allow students in a moodle course to be able to rate their confidence for a list of skills.
 
  ## Install instructions
