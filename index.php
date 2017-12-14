@@ -28,9 +28,11 @@
 // Replace skillsaudit with the name of your module and remove this line.
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/locallib.php');
 require_once(dirname(__FILE__).'/lib.php');
 
 $id = required_param('id', PARAM_INT); // Course.
+$nohead = optional_param('nohead', 0, PARAM_INT);
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
@@ -44,35 +46,37 @@ $event->add_record_snapshot('course', $course);
 $event->trigger();
 
 $strname = get_string('modulenameplural', 'mod_skillsaudit');
-$PAGE->set_url('/mod/skillsaudit/index.php', array('id' => $id));
-$PAGE->navbar->add($strname);
-$PAGE->set_title("$course->shortname: $strname");
-$PAGE->set_heading($course->fullname);
-$PAGE->set_pagelayout('incourse');
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading($strname);
-
+if(!$nohead) {
+	$PAGE->set_url('/mod/skillsaudit/index.php', array('id' => $id));
+	$PAGE->navbar->add($strname);
+	$PAGE->set_title("$course->shortname: $strname");
+	$PAGE->set_heading($course->fullname);
+	$PAGE->set_pagelayout('incourse');
+	
+	echo $OUTPUT->header();
+	echo $OUTPUT->heading($strname);
+}
 if (! $skillsaudits = get_all_instances_in_course('skillsaudit', $course)) {
     notice(get_string('noskillsaudits', 'skillsaudit'), new moodle_url('/course/view.php', array('id' => $course->id)));
 }
 
-$usesections = course_format_uses_sections($course->format);
+function get_rating_bar($percentage) {
+	$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
+	return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';
+}
+
+$usesections = false;
 
 $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_index';
 
-if ($usesections) {
-    $strsectionname = get_string('sectionname', 'format_'.$course->format);
-    $table->head  = array ($strsectionname, $strname);
-    $table->align = array ('center', 'left');
-} else {
-    $table->head  = array ($strname);
-    $table->align = array ('left');
-}
+
+$table->head  = array ($strname, 'Coverage', 'Confidence', 'Progress');
+$table->align = array ('left');
+
 
 $modinfo = get_fast_modinfo($course);
-$currentsection = '';
 foreach ($modinfo->instances['skillsaudit'] as $cm) {
     $row = array();
     if ($usesections) {
@@ -91,9 +95,16 @@ foreach ($modinfo->instances['skillsaudit'] as $cm) {
 
     $row[] = html_writer::link(new moodle_url('view.php', array('id' => $cm->id)),
                 $cm->get_formatted_name(), $class);
+	$confidence = 0;
+	$coverage = 0;
+	$progress = 0;
+	$row[] = get_rating_bar($confidence);
+	$row[] = get_rating_bar($coverage);
+	$row[] = get_rating_bar($progress);
     $table->data[] = $row;
 }
 
 echo html_writer::table($table);
-
-echo $OUTPUT->footer();
+if(!$nohead) {
+	echo $OUTPUT->footer();
+}
