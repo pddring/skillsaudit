@@ -29,6 +29,19 @@ require_once("$CFG->libdir/weblib.php");
 require_once("$CFG->libdir/gradelib.php");
 defined('MOODLE_INTERNAL') || die();
 
+class skillsaudit {
+	public static function get_rating_bar($percentage, $label) {
+		/*$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
+		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';*/
+		
+		$h = 120 * $percentage / 100;
+		$d = 180 - (180 * $percentage / 100);
+		$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
+		$html = '<span class="wrist"><span class="thumb" style="' . $style . '"></span></span><p>' . $label . ' <span class="summary_value">' . $percentage . '%</span></p>';
+		return $html;
+	}
+}
+
 function skillsaudit_get_user_summary($course, $user) {
 	$table = new html_table();
 	$table->attributes['class'] = 'generaltable mod_index';
@@ -56,8 +69,8 @@ function skillsaudit_get_user_summary($course, $user) {
 		$coverage = intval($grading_info->items[2]->grades[$user->id]->grade);
 		$total = $coverage * $confidence / 100;
 		
-		$row[] = filter_skillsaudit::get_rating_bar($coverage, 'Coverage');
-		$row[] = filter_skillsaudit::get_rating_bar($confidence, 'Confidence');
+		$row[] = skillsaudit::get_rating_bar($coverage, 'Coverage');
+		$row[] = skillsaudit::get_rating_bar($confidence, 'Confidence');
 		
 		if($total > $strongest['total']) {
 			$strongest['total'] = $total;
