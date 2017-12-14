@@ -94,16 +94,24 @@ foreach ($modinfo->instances['skillsaudit'] as $cm) {
     $class = $cm->visible ? null : array('class' => 'dimmed');
 
     $row[] = html_writer::link(new moodle_url('view.php', array('id' => $cm->id)),
-                $cm->get_formatted_name(), $class);
-	$confidence = 0;
-	$coverage = 0;
-	$progress = 0;
+                '<img src="' . $cm->get_icon_url() . '"> ' . $cm->get_formatted_name(), $class);
+				
+	$grading_info = grade_get_grades($course->id, 'mod', 'skillsaudit', $cm->instance, array($USER->id));
+ 
+	$grade_item_grademax = $grading_info->items[0]->grademax;
+	$confidence = intval($grading_info->items[0]->grades[$USER->id]->grade);
+	$coverage = intval($grading_info->items[2]->grades[$USER->id]->grade);
+	$progress = intval($grading_info->items[1]->grades[$USER->id]->grade);
+	$total = $coverage * $confidence / 100;
 	$row[] = get_rating_bar($confidence);
 	$row[] = get_rating_bar($coverage);
 	$row[] = get_rating_bar($progress);
     $table->data[] = $row;
 }
+echo('<h2>Summary</h2>');
+echo(skillsaudit_get_user_summary($COURSE, $USER));
 
+echo('<h2>Topic by topic</h2>');
 echo html_writer::table($table);
 if(!$nohead) {
 	echo $OUTPUT->footer();

@@ -29,6 +29,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['modulename'] = 'Skills audit';
+$string['noskillsaudits'] = 'There are no skills audits in this course';
 $string['modulenameplural'] = 'Skills audits';
 $string['modulename_help'] = '<p>A Skills audit allows students to rate their confidence in a list of skills.</p><p>Teachers can see how the confidence rating of each student changes over time.</p>';
 $string['skillsaudit:addinstance'] = 'Add a new skillsaudit';
