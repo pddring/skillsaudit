@@ -37,6 +37,8 @@ $string['skillsaudit:submit'] = 'Submit skills audit';
 $string['skillsaudit:view'] = 'View skills audit';
 $string['skillsaudit:editownrating'] = 'Clear the comment from their own skills rating';
 $string['skillsaudit:deleterating'] = 'Delete anyone\'s skills rating';
+$string['skillsaudit:trackratings'] = 'Track student\'s ratings';
+$string['skillsaudit:editskills'] = 'Edit list of skills';
 
 $string['skills'] = 'Skills';
 $string['skillsauditname'] = 'Skills audit name';
