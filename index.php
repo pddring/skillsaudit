@@ -103,8 +103,8 @@ foreach ($modinfo->instances['skillsaudit'] as $cm) {
 	$coverage = intval($grading_info->items[2]->grades[$USER->id]->grade);
 	$progress = intval($grading_info->items[1]->grades[$USER->id]->grade);
 	$total = $coverage * $confidence / 100;
-	$row[] = get_rating_bar($confidence);
 	$row[] = get_rating_bar($coverage);
+	$row[] = get_rating_bar($confidence);
 	$row[] = get_rating_bar($progress);
     $table->data[] = $row;
 }
