@@ -406,11 +406,14 @@ function skillsaudit_get_summary_html($cm, $userid){
 	$skills_count = count($skills);	
 	foreach($skills as $skill) {
 		$all_skills[$skill->skillid]->inthisaudit = true;
+		$all_skills[$skill->skillid]->ratingcount = 0;
 	}
 	
 	// get all ratings
 	$ratings = $DB->get_records_sql("SELECT id, skillid, confidence, timestamp FROM {skillsauditrating} WHERE auditid IN (SELECT id FROM {skillsaudit} WHERE course=?) AND userid=?", array($cm->course, $userid));
+
 	foreach ($ratings as $rating) {
+		
 		$all_skills[$rating->skillid]->rated = true;
 		if($rating->confidence > $all_skills[$rating->skillid]->max) {
 			$all_skills[$rating->skillid]->max = $rating->confidence;
@@ -418,6 +421,8 @@ function skillsaudit_get_summary_html($cm, $userid){
 		if($rating->confidence < $all_skills[$rating->skillid]->min) {
 			$all_skills[$rating->skillid]->min = $rating->confidence;
 		}
+		
+		$all_skills[$rating->skillid]->ratingcount++;
 		if($rating->timestamp > $all_skills[$rating->skillid]->latesttimestamp) {
 			$all_skills[$rating->skillid]->latest = $rating->confidence;
 			$all_skills[$rating->skillid]->latesttimestamp = $rating->timestamp;
@@ -443,8 +448,8 @@ function skillsaudit_get_summary_html($cm, $userid){
 			if($skill->latest < $lowest_confidence) {
 				$target_id = $skill->id;
 				$lowest_confidence = $skill->latest;
-				$min_total_confidence += $skill->min;
 			}
+			$min_total_confidence += $skill->min;
 			$rated_this_audit++;
 			$max_total_confidence += $skill->max;
 			$latest_total_confidence += $skill->latest;
