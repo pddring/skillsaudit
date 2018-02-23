@@ -329,7 +329,10 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 							}]);
 							promises[0].done(function(response) {
 								t.find('.skill_description').text(desc);
-								t.find('.skill_help_link').attr('href', helpLink).text(number);
+								if(helpLink.length > 0) {
+									number = '<span class="info_icon"></span>' + number;
+								}
+								t.find('.skill_help_link').attr('href', helpLink).html(number);
 							});
 						}
 					}, 
