@@ -232,7 +232,8 @@ class mod_skillsaudit_external extends external_api {
                     new external_single_structure(
                         array(
                             'number' => new external_value(PARAM_TEXT, 'skill spec number'),
-                            'description' => new external_value(PARAM_RAW, 'description of the skill')
+                            'description' => new external_value(PARAM_RAW, 'description of the skill'),
+							'link' => new external_value(PARAM_URL, 'help link for this skill')
                         )
                     )
                 )
@@ -249,6 +250,7 @@ class mod_skillsaudit_external extends external_api {
 					'id' => new external_value(PARAM_INT, 'id of the skill'),
 					'number' => new external_value(PARAM_TEXT, 'PoS or Spec reference number (e.g. 1.2)'),
 					'description' => new external_value(PARAM_RAW, 'description of the skill'),
+					'link' => new external_value(PARAM_URL, 'help link for this skill'),
 					'courseid' => new external_value(PARAM_INT, 'id of the course')
 				)
 			)

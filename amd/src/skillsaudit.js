@@ -365,18 +365,26 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				var verifiedSkills = [];
 				mod.showDialog("Check new skills", '<div id="skills_preview">', function() {
 					var skills = $('#id_newskills').val().split("\n");
-					var html = '<table class="generaltable"><tr><th>Number</th><th>Description</th></tr>';
+					var html = '<table class="generaltable"><tr><th>Number</th><th>Description</th><th>Help link</th></tr>';
 					
 					$.each(skills, function(i, value) {
-						var parts = value.match(/^([^ ]*) (.*)$/);
+						var parts = value.match(/^([^ ]*) (.*?)(https?:\/\/[^ ]*)?$/);
 						var number = "";
+						var helpLink = "";
 						var description = value;
 						if(parts && parts.length > 2) {
-							number = parts[1];
-							description = parts[2];
+							number = parts[1].trim();
+							description = parts[2].trim();
+							if(parts.length > 3) {
+								helpLink = parts[3].trim();
+							}
 						}
-						verifiedSkills.push({number: number, description: description});
-						html += '<tr><td>' + number + '</td><td>' + description + '</td></tr>';
+						var helpHtml = '';
+						if(helpLink.length > 0) {
+							helpHtml += '<a href="' + helpLink + '" target="_blank"><span class="info_icon"></span></a>';
+						}
+						verifiedSkills.push({number: number, description: description, link: helpLink});
+						html += '<tr><td>' + number + '</td><td>' + description + '</td><td>' + helpHtml + '</td></tr>';
 					});
 					html += '</table>';
 					$('#skills_preview').html(html);
@@ -392,7 +400,7 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 								// add new skills to list option
 								var tbl = $('#tbl_skills');
 								$.each(response, function(i, skill) {
-									tbl.append('<tr class="skill_row" id="skill_row_' + skill.id + '"><td class="skill_number"><a class="skill_help_link" href="">' + skill.number + '</a></td><td class="skill_description">' + skill.description + '</td><td><span id="skill_included_' + skill.id + '" class="skill_included_yes skill_included"></span></td></tr>');
+									tbl.append('<tr class="skill_row" id="skill_row_' + skill.id + '"><td class="skill_number"><a class="skill_help_link" href="' + skill.link + '">' + (skill.link.length > 0?'<span class="info_icon"></span>':'') + skill.number + '</a></td><td class="skill_description">' + skill.description + '</td><td><span id="skill_included_' + skill.id + '" class="skill_included_yes skill_included"></span></td></tr>');
 									$('#skill_included_' + skill.id).click(onSkillClick);
 									$('#skill_row_' + skill.id).dblclick(onSkillDblClick);
 								});

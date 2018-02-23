@@ -28,7 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_skillsaudit';
-$plugin->version = 2018010900;
+$plugin->version = 2018022300;
 $plugin->release = 'v0.3';
 $plugin->requires = 2014051200;
 $plugin->maturity = MATURITY_STABLE;
