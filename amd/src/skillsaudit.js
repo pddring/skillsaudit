@@ -170,6 +170,10 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				
 				skills[currentSkillId].confidence = confidence;
 				var comment = $('#id_comment').val();
+				// fix for tinymce
+				if(typeof(tinyMCE)!==undefined) {
+					comment = tinyMCE.get('#id_comment').getContent();					
+				}
 				var promises = ajax.call([{
 					methodname: 'mod_skillsaudit_save_confidence',
 					args: {courseid: course, skillid: currentSkillId, confidence: confidence, comment: comment, auditid:auditid}
