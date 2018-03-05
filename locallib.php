@@ -341,7 +341,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 					$html .= $i . ' hour' . ($i > 1?'s':'') . ' ago';
 				} else {
 					if($diff > 14) {
-						$i = round($diff / 24);
+						$i = round($diff / 7);
 						$html .= $i . ' week' . ($i > 1?'s':'') . ' ago';
 					} else {
 						$i = round($diff);
