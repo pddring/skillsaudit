@@ -1,5 +1,6 @@
+
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/skillsaudit/db" VERSION="20170613" COMMENT="XMLDB file for Moodle mod/skillsaudit"
+<XMLDB PATH="mod/skillsaudit/db" VERSION="20180305" COMMENT="XMLDB file for Moodle mod/skillsaudit"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -30,7 +31,7 @@
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the course the skill applies to"/>
         <FIELD NAME="number" TYPE="char" LENGTH="64" NOTNULL="false" SEQUENCE="false" COMMENT="Skill reference ID from specification or scheme of work (e.g. 2.1)"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the skill"/>
-		<FIELD NAME="link" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Link to more info about this skill"/>
+        <FIELD NAME="link" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Link to more info about this skill"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -56,6 +57,20 @@
         <FIELD NAME="confidence" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Confidence rating for this skill"/>
         <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Time when this rating was applied"/>
         <FIELD NAME="comment" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="User written comment to go alongside this rating"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="skillsauditfeedback" COMMENT="Teacher feedback">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="user id of the student receiving feedback"/>
+        <FIELD NAME="fromid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="user id of the teacher leaving feedback"/>
+        <FIELD NAME="auditid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="id of the skillsaudit this feedback relates to"/>
+        <FIELD NAME="skillid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="optional skill id"/>
+        <FIELD NAME="timestamp" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="date and time the feedback was left"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="feedback message"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

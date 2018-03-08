@@ -158,6 +158,32 @@ if ($skillsaudit->intro) {
 echo($OUTPUT->heading('Summary'));
 echo('<div class="skillsaudit_user_summary">' . skillsaudit_get_summary_html($cm, $USER->id) . '</div>');
 
+// get teacher feedback
+$feedback = $DB->get_records_sql('SELECT * FROM {skillsauditfeedback} WHERE auditid = ? AND userid = ? ORDER BY timestamp ASC',
+                    array($cm->instance, $USER->id));
+
+if(count($feedback) > 0) {
+    $html = $OUTPUT->heading('Teacher Feedback:');
+    foreach($feedback as $f) {
+        $fromuser = $DB->get_record('user', array('id'=>$f->fromid));
+        $html .= '<div class="teacher_feedback">';
+        if($f->skillid > 0) {
+            $skill = $DB->get_record('skills', array('id'=>$f->skillid));
+            $html .= '<div class="feedback_skill">';
+            if(str_len($skill->link) > 0) {
+                $html .= '<a href="' . $skill->link . '"><span class="info_icon"></span></a>';
+            };
+            $html .= '<b>' . $cm->name . ': ' . $skill->number . '</b> ' . $skill->description . '</div>';
+        } else {
+            $html .= '<div class="feedback_skill">' . $cm->name . ':</div>';
+        }
+        $html .=  '<div class="feedback_message">' . $f->message . '</div>';
+        $html .= '<div class="feedback_from">From ' . $fromuser->firstname . ' ' . $fromuser->lastname . ' on ' . date("D jS M Y", $f->timestamp) . '</div>';
+        $html .= '</div>';
+    }
+    echo($html);
+}
+
 // Replace the following lines with you own code.
 echo $OUTPUT->heading('Skills');
 

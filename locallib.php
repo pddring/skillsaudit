@@ -232,7 +232,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
 		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';
 	}
-	global $DB;
+	global $DB, $CFG;
 	ob_start();	
 	$context = context_module::instance($cm->id);
 	$users = get_enrolled_users($context, 'mod/skillsaudit:submit', $group->id);
@@ -273,7 +273,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$coverage = intval($grading_info->items[2]->grades[$user->id]->str_grade);
 		remember('coverage', $totals, $coverage);
 		
-		$html .= '<tr><th class="rating_td" id="rating_td_0_' . $user->id . '_name">' . $user->firstname . ' ' . $user->lastname . '</th>';
+		$html .= '<tr><th class="rating_td" id="rating_td_0_' . $user->id . '_name"><a href="' . $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&course=' . $cm->course . '">' . $user->firstname . ' ' . $user->lastname . '</a></th>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($confidence) . $confidence . '%</td>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_progress">' . get_rating_bar($progress) . $progress . '%</td>';
 		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($coverage) .$coverage . '%</td>';
@@ -422,6 +422,9 @@ function skillsaudit_get_summary_html($cm, $userid){
 			$all_skills[$rating->skillid]->min = $rating->confidence;
 		}
 		
+                if(!isset($all_skills[$rating->skillid]->ratingcount)){
+                    $all_skills[$rating->skillid]->ratingcount = 0;
+                }
 		$all_skills[$rating->skillid]->ratingcount++;
 		if($rating->timestamp > $all_skills[$rating->skillid]->latesttimestamp) {
 			$all_skills[$rating->skillid]->latest = $rating->confidence;

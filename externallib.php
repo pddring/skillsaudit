@@ -2,57 +2,147 @@
 require_once("$CFG->libdir/externallib.php");
 require_once(dirname(__FILE__).'/locallib.php');
 class mod_skillsaudit_external extends external_api {
-	public static function get_activity_summary($cmid, $userid, $skillid) {
-		global $DB;
-		$params = self::validate_parameters(self::get_activity_summary_parameters(), array('cmid' => $cmid, 'userid' => $userid, 'skillid' => $skillid));
-		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
-		$context = context_module::instance($cm->id);
-		require_capability('mod/skillsaudit:trackratings', $context);
-		
-		return skillsaudit_get_activity_summary($cm, $userid, $skillid);
-	}
-	
-	public static function get_activity_summary_parameters() {
-		return new external_function_parameters(
-			array(
-				'cmid' => new external_value(PARAM_INT, 'course module id'),
-				'userid' => new external_value(PARAM_INT, 'user id'),
-				'skillid' => new external_value(PARAM_INT, 'skill id')
-			)
-		);
-	}
-	
-	public static function get_activity_summary_returns() {
-		return new external_value(PARAM_RAW, 'HTML with activity summary');
-	}
-	
- 	public static function update_tracker_parameters() {
-		return new external_function_parameters(
-			array(
-				'cmid' => new external_value(PARAM_INT, 'course module id'),
-				'groupid' => new external_value(PARAM_INT, 'group id'),
-				'highlight' => new external_value(PARAM_TEXT, 'skills to highlight')
-			)
-		);
-	}
-	
-	public static function update_tracker_returns() {
-		return new external_value(PARAM_RAW, 'HTML with summary of ratings');
-	}
-	
-	public static function update_tracker($cmid, $groupid, $highlight){
-		global $DB;
-		$params = self::validate_parameters(self::update_tracker_parameters(), array('cmid' => $cmid, 'groupid' => $groupid, 'highlight' => $highlight));
-		
-		$cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
-		$context = context_module::instance($cm->id);
-		require_capability('mod/skillsaudit:trackratings', $context);
-		$group = $DB->get_record('groups', array('id' => $groupid));
-		$skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?) ORDER BY number ASC', array($cm->instance));
-		return skillsaudit_get_tracking_table($cm, $group, $skills, $highlight);
-	}
-	
- 	/**
+    
+    public static function delete_feedback($cmid, $feedbackid) {
+        global $DB, $USER;
+        $params = self::validate_parameters(self::delete_feedback_parameters(), array('cmid' => $cmid, 'feedbackid' => $feedbackid));
+        $cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+        $context = context_module::instance($cm->id);
+        require_capability('mod/skillsaudit:postfeedback', $context);
+        $DB->delete_records('skillsauditfeedback', array('auditid'=>$cm->instance, 'id'=>$feedbackid));
+        return $feedbackid;
+    }
+    
+    public static function delete_feedback_parameters() {
+            return new external_function_parameters(
+                    array(
+                            'cmid' => new external_value(PARAM_INT, 'course module id'),
+                            'feedbackid' => new external_value(PARAM_INT, 'feedback id'),
+                    )
+            );
+    }
+    
+    public static function delete_feedback_returns() {
+            return new external_value(PARAM_INT, 'feedback id if successful or 0 if not');
+    }
+    
+    
+    public static function post_feedback($cmid, $skillid, $userid, $comment) {
+        global $DB, $USER;
+        $params = self::validate_parameters(self::post_feedback_parameters(), array('cmid' => $cmid, 'skillid' => $skillid, 'userid' => $userid, 'comment' => $comment));
+        $cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+        $context = context_module::instance($cm->id);
+        require_capability('mod/skillsaudit:postfeedback', $context);
+        $feedback = new stdClass();
+        $feedback->userid = $userid;
+        $feedback->fromid = $USER->id;
+        $feedback->auditid = $cm->instance;
+        $feedback->skillid = $skillid;
+        $feedback->timestamp = time();
+        $feedback->message = $comment;
+        $DB->insert_record('skillsauditfeedback', $feedback);
+        $html = print_r($feedback, true);
+        return $html;
+    }
+    
+    public static function post_feedback_parameters() {
+            return new external_function_parameters(
+                    array(
+                            'cmid' => new external_value(PARAM_INT, 'course module id'),
+                            'skillid' => new external_value(PARAM_INT, 'skill id'),
+                            'userid' => new external_value(PARAM_INT, 'user id'),
+                            'comment' => new external_value(PARAM_TEXT, 'Comment')
+                    )
+            );
+    }
+
+    public static function post_feedback_returns() {
+            return new external_value(PARAM_RAW, 'HTML version of comment');
+    }
+    
+    public static function get_activity_summary($cmid, $userid, $skillid) {
+            global $DB;
+            $params = self::validate_parameters(self::get_activity_summary_parameters(), array('cmid' => $cmid, 'userid' => $userid, 'skillid' => $skillid));
+            $cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+            $context = context_module::instance($cm->id);
+            require_capability('mod/skillsaudit:trackratings', $context);
+            $html = skillsaudit_get_activity_summary($cm, $userid, $skillid);
+            
+            $sql = 'SELECT * FROM {skillsauditfeedback} WHERE auditid = ? AND userid = ? AND skillid IN (0, ?) ORDER BY timestamp ASC';
+            if($skillid == 0) {
+                $sql = 'SELECT * FROM {skillsauditfeedback} WHERE auditid = ? AND userid = ? ORDER BY timestamp ASC';
+            }
+            $feedback = $DB->get_records_sql($sql,
+                    array($cm->instance, $userid, $skillid));
+            if(count($feedback) > 0) {
+                $html .= '<h4>Teacher Feedback:</h4>';
+                foreach($feedback as $f) {
+                    $fromuser = $DB->get_record('user', array('id'=>$f->fromid));
+                    $html .= '<div class="teacher_feedback" id="teacher_feedback_' . $f->id . '">';
+                    if($f->skillid > 0) {
+                        $skill = $DB->get_record('skills', array('id'=>$f->skillid));
+                        $html .= '<div class="feedback_skill">';
+                        if(str_len($skill->link) > 0) {
+                            $html .= '<a href="' . $skill->link . '"><span class="info_icon"></span></a>';
+                        }
+                        $html .= '<b>' . $cm->name . ': ' . $skill->number . '</b> ' . $skill->description . ':</div>';
+                    } else {
+                        $html .= '<div class="feedback_skill">' . $cm->name . ':</div>';
+                    }
+                    $html .=  '<div class="feedback_message">' . format_text($f->message, FORMAT_MOODLE, array('context'=>$context)) . '</div>';
+                    $html .= '<div class="feedback_from">From ' . $fromuser->firstname . ' ' . $fromuser->lastname . ' on ' . date("D jS M Y", $f->timestamp) . '</div>';
+                    $html .= '<button class="btn btn-secondary btn_delete_feedback" id="btn_delete_feedback_' . $f->id . '">Delete</button>';
+                    $html .= '</div>';
+                }
+            }
+
+            if(has_capability('mod/skillsaudit:postfeedback', $context)) {
+                $html .= '<h4>Add Comment:</h4><textarea class="form-control rating_comment_editor" id="rating_comment_' . $cmid . '_' . $userid . '_' . $skillid . '"></textarea>';
+            }
+            return $html; 
+    }
+
+    public static function get_activity_summary_parameters() {
+            return new external_function_parameters(
+                    array(
+                            'cmid' => new external_value(PARAM_INT, 'course module id'),
+                            'userid' => new external_value(PARAM_INT, 'user id'),
+                            'skillid' => new external_value(PARAM_INT, 'skill id')
+                    )
+            );
+    }
+
+    public static function get_activity_summary_returns() {
+            return new external_value(PARAM_RAW, 'HTML with activity summary');
+    }
+
+    public static function update_tracker_parameters() {
+            return new external_function_parameters(
+                    array(
+                            'cmid' => new external_value(PARAM_INT, 'course module id'),
+                            'groupid' => new external_value(PARAM_INT, 'group id'),
+                            'highlight' => new external_value(PARAM_TEXT, 'skills to highlight')
+                    )
+            );
+    }
+
+    public static function update_tracker_returns() {
+            return new external_value(PARAM_RAW, 'HTML with summary of ratings');
+    }
+
+    public static function update_tracker($cmid, $groupid, $highlight){
+            global $DB;
+            $params = self::validate_parameters(self::update_tracker_parameters(), array('cmid' => $cmid, 'groupid' => $groupid, 'highlight' => $highlight));
+
+            $cm = get_coursemodule_from_id('skillsaudit', $cmid, 0, false, MUST_EXIST);		
+            $context = context_module::instance($cm->id);
+            require_capability('mod/skillsaudit:trackratings', $context);
+            $group = $DB->get_record('groups', array('id' => $groupid));
+            $skills = $DB->get_records_sql('SELECT s.* FROM {skills} s WHERE s.id IN (SELECT skillid FROM {skillsinaudit} WHERE auditid = ?) ORDER BY number ASC', array($cm->instance));
+            return skillsaudit_get_tracking_table($cm, $group, $skills, $highlight);
+    }
+
+    /**
      * Returns description of method parameters
      * @return external_function_parameters
      */

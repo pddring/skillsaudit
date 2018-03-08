@@ -36,14 +36,53 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 						return;
 					}
 					var skillid = parts[2];
-					mod.showDialog("Summary", "Loading...");
+					mod.showDialog("Summary", "Loading...", null, [{
+						id:'send',
+						text: 'Send message',
+						close: true,
+						onClick: function() {
+							var comment = $('.rating_comment_editor').val();
+							var id = $('.rating_comment_editor').attr('id');
+							var parts = id.split("_");
+							var cmid = parts[2];
+							var skillid = parts[4];
+							var userid = parts[3];
+                                                        var promises = ajax.call([{
+                                                                methodname: 'mod_skillsaudit_post_feedback',
+                                                                args: {cmid: cmid, skillid: skillid, userid: userid, comment: comment}
+                                                        }]);
+
+                                                        promises[0].done(function(response) {
+                                                                $('.latest_comment').html(response);
+                                                                console.log(response);
+                                                        });
+						}
+					}, {
+						id: 'close',
+						text: 'Close',
+						close: true
+					}
+					]);
+					
 					var promises = ajax.call([{
 						methodname: 'mod_skillsaudit_get_activity_summary',
 						args: {cmid: cmid, userid: userid, skillid: skillid}
 					}]);
 					
 					promises[0].done(function(response) {
-						$('#dlg_body').html(response);
+                                            $('#dlg_body').html(response);
+                                            $('.btn_delete_feedback').click(function(e) {
+                                                var id = e.currentTarget.id.split('_')[3];
+                                                var pDelete = ajax.call([{
+                                                        methodname: 'mod_skillsaudit_delete_feedback',
+                                                        args: {cmid: cmid, feedbackid: id}
+                                                }]);
+
+                                                pDelete[0].done(function(response) {
+                                                        $('#teacher_feedback_' + response).remove();
+                                                });
+                                            });
+						
 					});
 				});
 			}

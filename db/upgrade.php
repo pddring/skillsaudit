@@ -80,6 +80,34 @@ function xmldb_skillsaudit_upgrade($oldversion) {
 		// Skillsaudit savepoint reached.
 		upgrade_mod_savepoint(true, 2017120400, 'skillsaudit');
 	}
+	
+	if ($oldversion < 2018030500) {
+
+        // Define table skillsauditfeedback to be created.
+        $table = new xmldb_table('skillsauditfeedback');
+
+        // Adding fields to table skillsauditfeedback.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('fromid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('auditid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('skillid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_field('timestamp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('message', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        // Adding keys to table skillsauditfeedback.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for skillsauditfeedback.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Skillsaudit savepoint reached.
+        upgrade_mod_savepoint(true, 2018030500, 'skillsaudit');
+    }
+
+
 
 
 

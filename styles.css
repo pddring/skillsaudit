@@ -276,3 +276,28 @@
 .info_icon:hover {
 	background-color: #FF3;
 }
+
+.teacher_feedback {
+    background-color: #ffa;
+    margin: 10px;
+    padding: 10px;
+    position: relative;
+}
+
+.feedback_message {
+    padding: 10px;
+}
+
+.feedback_from {
+    font-size: 0.7em;
+}
+
+.feedback_skill {
+    font-weight: bold;
+}
+
+.btn_delete_feedback {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
