@@ -18,7 +18,7 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 					var button = buttons[i];
 					if(button.onClick) {
 						$('#dlg_btn_' + button.id).click(button.onClick);
-					}
+					}  
 				}
 			} else {
 				$('#dlg_footer').html('<button class="btn btn-secondary" id="dlg_btn_close" data-dismiss="modal">Close</button>');
@@ -29,62 +29,107 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 		
 		trackinit: function(course, skills, auditid, cmid) {
 			function addSkillsEventHandlers() {
-				$('.rating_td').click(function(e) {
-					parts = e.currentTarget.id.split("_");
-					var userid = parts[3];
-					if(!userid) {
-						return;
-					}
-					var skillid = parts[2];
-					mod.showDialog("Summary", "Loading...", null, [{
-						id:'send',
-						text: 'Send message',
-						close: true,
-						onClick: function() {
-							var comment = $('.rating_comment_editor').val();
-							var id = $('.rating_comment_editor').attr('id');
-							var parts = id.split("_");
-							var cmid = parts[2];
-							var skillid = parts[4];
-							var userid = parts[3];
-                                                        var promises = ajax.call([{
-                                                                methodname: 'mod_skillsaudit_post_feedback',
-                                                                args: {cmid: cmid, skillid: skillid, userid: userid, comment: comment}
-                                                        }]);
 
-                                                        promises[0].done(function(response) {
-                                                                $('.latest_comment').html(response);
-                                                                console.log(response);
-                                                        });
+				function addSummaryClickHandlers() {
+					$('.rating_td').click(function(e) {
+						parts = e.currentTarget.id.split("_");
+						var userid = parts[3];
+						if(!userid) {
+							return;
 						}
-					}, {
-						id: 'close',
-						text: 'Close',
-						close: true
-					}
-					]);
-					
-					var promises = ajax.call([{
-						methodname: 'mod_skillsaudit_get_activity_summary',
-						args: {cmid: cmid, userid: userid, skillid: skillid}
-					}]);
-					
-					promises[0].done(function(response) {
-                                            $('#dlg_body').html(response);
-                                            $('.btn_delete_feedback').click(function(e) {
-                                                var id = e.currentTarget.id.split('_')[3];
-                                                var pDelete = ajax.call([{
-                                                        methodname: 'mod_skillsaudit_delete_feedback',
-                                                        args: {cmid: cmid, feedbackid: id}
-                                                }]);
+						var skillid = parts[2];
+						mod.showDialog("Summary", "Loading...", null, [{
+							id:'send',
+							text: 'Send message',
+							close: true,
+							onClick: function() {
+								var comment = $('.rating_comment_editor').val();
+								var id = $('.rating_comment_editor').attr('id');
+								var parts = id.split("_");
+								var cmid = parts[2];
+								var skillid = parts[4];
+								var userid = parts[3];
+	                                                        var promises = ajax.call([{
+	                                                                methodname: 'mod_skillsaudit_post_feedback',
+	                                                                args: {cmid: cmid, skillid: skillid, userid: userid, comment: comment}
+	                                                        }]);
 
-                                                pDelete[0].done(function(response) {
-                                                        $('#teacher_feedback_' + response).remove();
-                                                });
-                                            });
+	                                                        promises[0].done(function(response) {
+	                                                                $('.latest_comment').html(response);
+	                                                                console.log(response);
+	                                                        });
+							}
+						}, {
+							id: 'close',
+							text: 'Close',
+							close: true
+						}
+						]);
 						
+						var promises = ajax.call([{
+							methodname: 'mod_skillsaudit_get_activity_summary',
+							args: {cmid: cmid, userid: userid, skillid: skillid}
+						}]);
+						
+						promises[0].done(function(response) {
+	                                            $('#dlg_body').html(response);
+	                                            $('.btn_delete_feedback').click(function(e) {
+	                                                var id = e.currentTarget.id.split('_')[3];
+	                                                var pDelete = ajax.call([{
+	                                                        methodname: 'mod_skillsaudit_delete_feedback',
+	                                                        args: {cmid: cmid, feedbackid: id}
+	                                                }]);
+
+	                                                pDelete[0].done(function(response) {
+	                                                        $('#teacher_feedback_' + response).remove();
+	                                                });
+	                                            });
+							
+						});
+					});	
+				}
+				$('th.r_sortable').click(function(e) {
+
+					var sortLink = $(e.currentTarget);
+					if(sortLink.data('order') == "asc") {
+						sortLink.data('order', "desc");
+					} else {
+						sortLink.data('order', "asc");
+					}
+					var order = sortLink.data('order');
+					var table  = $(e.currentTarget).parents('table').eq(0);
+
+					var tbody = table.find('tbody');
+					var rows = tbody.find('tr').toArray();
+					tbody.html('');
+					var sortby = $(e.currentTarget).data('col');
+
+					rows.sort(function(a, b) {
+						var valA = $(a).find("td[data-col='" + sortby + "']").data('sortable');
+						var valB = $(b).find("td[data-col='" + sortby + "']").data('sortable');
+						if(typeof(valA) == "string") {
+							if(order == "asc") {
+								return valA.localeCompare(valB);
+							}
+							return valB.localeCompare(valA);	
+						}
+						if(order == "asc") {
+							return valA - valB;
+						}
+						return valB - valA;
 					});
+
+					
+					for(var i = 0; i < rows.length; i++) {
+						tbody.append(rows[i]);
+					}
+					addSummaryClickHandlers();
+					
+
 				});
+
+				addSummaryClickHandlers();
+				
 			}
 			
 			function update() {
@@ -211,7 +256,12 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				var comment = $('#id_comment').val();
 				// fix for tinymce
 				if(typeof(tinyMCE)!==undefined) {
-					comment = tinyMCE.get('#id_comment').getContent();					
+					try {
+						comment = tinyMCE.get('id_comment').getContent();	
+					} catch(e) {
+
+					}
+					
 				}
 				var promises = ajax.call([{
 					methodname: 'mod_skillsaudit_save_confidence',

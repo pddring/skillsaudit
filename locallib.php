@@ -241,9 +241,9 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$grading_info = grade_get_grades($cm->course, 'mod', 'skillsaudit', $cm->instance, array_keys($users));
 	$html = '<table class="rating_table table table-bordered"><thead>';
 	$html .= '<tr><th>Student</th><th colspan="3">This topic</th><th colspan="' . count($skills) . '">Individual skills</th><th colspan="2">Whole course</th></tr>';
-	$html .= '<tr><th>Name</th><th>Confidence</th><th>Progress</th><th>Coverage</th>';
+	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">Confidence</th><th class="r_sortable" data-col="progress">Progress</th><th class="r_sortable" data-col="coverage">Coverage</th>';
 	foreach($skills as $skill) {
-		$html .= '<th data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">. ' . $skill->number . '</th>';
+		$html .= '<th data-toggle="tooltip" class="r_sortable" data-col="skill_' . $skill->id . '" title="' . htmlspecialchars($skill->description) . '">. ' . $skill->number . '</th>';
 	}
 	$html .= '<th>Confidence</th><th>Coverage</th>';
 	$html .= '</thead></tr>';
@@ -273,10 +273,10 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$coverage = intval($grading_info->items[2]->grades[$user->id]->str_grade);
 		remember('coverage', $totals, $coverage);
 		
-		$html .= '<tr><th class="rating_td" id="rating_td_0_' . $user->id . '_name"><a href="' . $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&course=' . $cm->course . '">' . $user->firstname . ' ' . $user->lastname . '</a></th>';
-		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($confidence) . $confidence . '%</td>';
-		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_progress">' . get_rating_bar($progress) . $progress . '%</td>';
-		$html .= '<td class="rating_td" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($coverage) .$coverage . '%</td>';
+		$html .= '<tr><td class="rating_td " data-sortable="' . htmlspecialchars($user->lastname . ' ' . $user->firstname) .'" data-col="name" id="rating_td_0_' . $user->id . '_name"><a href="' . $CFG->wwwroot . '/user/view.php?id=' . $user->id . '&course=' . $cm->course . '">' . $user->firstname . ' ' . $user->lastname . '</a></td>';
+		$html .= '<td class="rating_td" data-col="confidence" data-sortable="' . $confidence . '" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($confidence) . $confidence . '%</td>';
+		$html .= '<td class="rating_td" data-col="progress" data-sortable="' . $progress . '" id="rating_td_0_' . $user->id . '_progress">' . get_rating_bar($progress) . $progress . '%</td>';
+		$html .= '<td class="rating_td" data-col="coverage" data-sortable="' . $coverage . '" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($coverage) .$coverage . '%</td>';
 		
 		foreach($skills as $skill) {
 			$rating = $DB->get_record_sql('SELECT id, confidence AS latest, timestamp, 
@@ -299,7 +299,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			$diff = (time() - $rating->timestamp) / 86400;
 			
 	
-			$html .= '<td class="rating_td" id="rating_td_' . $skill->id .'_' . $user->id . '" data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">';
+			$html .= '<td class="rating_td" data-sortable="' . $rating->latest . '" data-col="skill_' . $skill->id . '" id="rating_td_' . $skill->id .'_' . $user->id . '" data-toggle="tooltip" title="' . htmlspecialchars($skill->description) . '">';
 			
 			$status = "no";
 			if($highlight == "today") {
@@ -325,7 +325,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			}
 			$html .= '<span class="num_ratings">' . $rating->numratings . '</span> ';
 			
-			remember($skill->number, $totals, $rating->latest);
+			remember("skill_" . $skill->id, $totals, $rating->latest);
 			$latest_hue = 'hsl(' . round($rating->latest * 120.0 / 100.0) . ', 100%, 50%)';
 			$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
 			$lowest_hue = 'hsl(' . round($rating->lowest * 120.0 / 100.0) . ', 100%, 50%)';
@@ -374,10 +374,10 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	
 	// add mean values
 	$html .= '<tr>';
-	$html .= '<th class="rating_td">Average</th>';
+	$html .= '<th class="rating_td" data-sortable="ZZZ" data-col="name">Average</th>';
 	foreach(array_keys($totals) as $name) {
 		$average = round($totals[$name] / count($users));
-		$html .= '<td class="rating_td">' . get_rating_bar($average) . $average . '%</td>';
+		$html .= '<td class="rating_td" data-sortable="' . $average . '" data-col="' . $name . '">' . get_rating_bar($average) . $average . '%</td>';
 	}
 	$html .= '</tr>';
 	$html .= '</tbody>';
