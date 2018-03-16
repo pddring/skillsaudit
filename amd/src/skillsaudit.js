@@ -56,7 +56,7 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 
 	                                                        promises[0].done(function(response) {
 	                                                                $('.latest_comment').html(response);
-	                                                                console.log(response);
+	                                                                //console.log(response);
 	                                                        });
 							}
 						}, {
@@ -100,10 +100,12 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 					var table  = $(e.currentTarget).parents('table').eq(0);
 
 					var tbody = table.find('tbody');
-					var rows = tbody.find('tr').toArray();
+					var rows = [];
+					tbody.find('tr').each(function(i, o) {
+						rows.push(o.outerHTML);
+					});
 					tbody.html('');
 					var sortby = $(e.currentTarget).data('col');
-
 					rows.sort(function(a, b) {
 						var valA = $(a).find("td[data-col='" + sortby + "']").data('sortable');
 						var valB = $(b).find("td[data-col='" + sortby + "']").data('sortable');
@@ -119,7 +121,6 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 						return valB - valA;
 					});
 
-					
 					for(var i = 0; i < rows.length; i++) {
 						tbody.append(rows[i]);
 					}

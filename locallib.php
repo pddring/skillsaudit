@@ -230,7 +230,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	function get_rating_bar($percentage) {
 		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
-		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';
+		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span></span>';
 	}
 	global $DB, $CFG;
 	ob_start();	
@@ -246,7 +246,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$html .= '<th data-toggle="tooltip" class="r_sortable" data-col="skill_' . $skill->id . '" title="' . htmlspecialchars($skill->description) . '">. ' . $skill->number . '</th>';
 	}
 	$html .= '<th>Confidence</th><th>Coverage</th>';
-	$html .= '</thead></tr>';
+	$html .= '</tr></thead>';
 	$html .= '<tbody>';
 	$show_status = false;
 	if($highlight !== "") {
