@@ -462,14 +462,14 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 					var html = '<table class="generaltable"><tr><th>Number</th><th>Description</th><th>Help link</th></tr>';
 					
 					$.each(skills, function(i, value) {
-						var parts = value.match(/^([^ ]*) (.*?)(https?:\/\/[^ ]*)?$/);
+						var parts = value.match(/^(.*?)\s+(.*?)\s(https?:\/\/.*)?$/m);
 						var number = "";
 						var helpLink = "";
 						var description = value;
 						if(parts && parts.length > 2) {
 							number = parts[1].trim();
 							description = parts[2].trim();
-							if(parts.length > 3) {
+							if(parts.length > 3 && parts[3]) {
 								helpLink = parts[3].trim();
 							}
 						}
