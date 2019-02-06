@@ -72,7 +72,7 @@ $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_index';
 
 
-$table->head  = array ($strname, 'Coverage', 'Confidence', 'Progress');
+$table->head  = array ($strname, 'Coverage', 'Confidence', 'Competence');
 $table->align = array ('left');
 
 

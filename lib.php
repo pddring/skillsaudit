@@ -385,7 +385,7 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
 		grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
             $skillsaudit->id, 0, $grades, $item);	
 		
-		$item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Progress)';
+		$item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Competence)';
 		grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
             $skillsaudit->id, 1, $grades, $item);
 		
@@ -398,8 +398,6 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
     if ($grades === false) {
         $item['reset'] = true;
     }
-
-
 }
 
 /**
@@ -430,6 +428,9 @@ function skillsaudit_update_grades(stdClass $skillsaudit, $userid = 0) {
 
     // Populate array of grade objects indexed by userid.
     $grades = array();
+
+    error_log("User $userid mod: " . json_encode($skillsaudit));
+
 
     grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit', $skillsaudit->id, 0, $grades);
 }

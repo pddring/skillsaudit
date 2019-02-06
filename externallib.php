@@ -213,7 +213,7 @@ class mod_skillsaudit_external extends external_api {
 		$DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
 		return array(
 			'ratingID' => $ratingid,
-			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id)
+			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id, false)
 		);
 		
 	}
@@ -305,7 +305,7 @@ class mod_skillsaudit_external extends external_api {
 		
 		$result = array(
 			'ratingHtml' => skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rating, $cm->instance),
-			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id)
+			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id, false)
 		);
 		return $result;
 	}
