@@ -231,12 +231,13 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 	return $html;
 }
 
-function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
+function skillsaudit_get_tracking_table_old($cm, $group, $skills, $highlight) {
 	function get_rating_bar($percentage) {
 		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
 		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span></span>';
 	}
 	global $DB, $CFG;
+	$start = microtime(true);
 	ob_start();	
 	$context = context_module::instance($cm->id);
 	$users = get_enrolled_users($context, 'mod/skillsaudit:submit', $group->id);
@@ -387,7 +388,51 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$html .= '</tbody>';
 	$html .= '</table>';
 	ob_end_clean();
+	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
 	return $html;
+}
+
+function skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight = "") {
+	global $DB, $CFG;
+	$start = microtime(true);
+	$html = '';
+
+	// create table
+	$table = new html_table();
+	$table->attributes['class'] = 'generaltable mod_index';
+	$table->head  = array ('Student', 'This topic', 'Individual skills', 'Whole course');
+	$table->headspan = array(1, 3, count($skills), 2);
+	$table->align = array ('left');
+
+	// add each skill as a header
+	$row = array('Name', 'Confidence', 'Competence', 'Coverage');
+	foreach($skills as $skill) {
+		$row[] = s($skill->number);
+	}
+	$row[] = 'Confidence';
+	$row[] = 'Coverage';
+	$table->data[] = $row;
+
+
+	// get users in group
+	$context = context_module::instance($cm->id);
+	$users = get_enrolled_users($context, 'mod/skillsaudit:submit', $group->id);
+	$course = $DB->get_record('course', array('id' => $cm->course));
+
+	foreach($users as $user) {
+		//$row = [htmlwriter::link(s($user->firstname . " " . $user->lastname))];
+		$table->data[] = $row;
+	}
+
+
+	$html .= html_writer::table($table);
+	//$html .= '<pre>' . print_r($skills, true) . '</pre>';
+	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
+	return $html;
+}
+
+function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
+	return skillsaudit_get_tracking_table_old($cm, $group, $skills, $highlight);
 }
 
 // return ["confidence"=>percentage, "coverage"=>percentage, "competence"=>percentage, 
@@ -414,17 +459,21 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 		$grades = $DB->get_records_sql("SELECT gi.id, gi.iteminstance, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule
 			FROM {grade_items} AS gi 
 			LEFT JOIN {grade_grades} AS g ON gi.id = g.itemid
-			WHERE gi.courseid=? AND gi.categoryid=? AND gi.itemmodule <> ? AND (g.userid=? OR g.userid is NULL)", 
+			WHERE gi.courseid=? AND gi.categoryid=? AND (gi.itemmodule <> ? OR (gi.itemmodule IS NULL AND gi.itemtype ='manual')) AND (g.userid=? OR g.userid IS NULL)", 
 			[$courseid, $categoryid, 'skillsaudit', $userid]);
 		
 		$total_grade = 0;
 		// calculate average grade
 		$count = count($grades);
+		$valid_grades = 0;
 		if($count > 0) {
 			foreach($grades as $grade) {
 				$total_grade += $grade->finalgrade;
+				if(!is_null($grade->finalgrade)) {
+					$valid_grades++;
+				}
 			}
-			$competence = $total_grade / $count;
+			$competence = $total_grade / $valid_grades;
 		}
 
 	} else {
@@ -436,7 +485,7 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 		$grades = $DB->get_records_sql("SELECT gi.id, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule 
 			FROM {grade_items} AS gi 
 			LEFT JOIN {grade_grades} AS g ON gi.id = g.itemid
-			WHERE gi.courseid=? AND gi.itemmodule <> ? AND (g.userid=? OR g.userid IS NULL)", 
+			WHERE gi.courseid=? AND (gi.itemmodule <> ? OR (gi.itemmodule IS NULL AND gi.itemtype ='manual')) AND (g.userid=? OR g.userid IS NULL)", 
 			[$courseid, 'skillsaudit', $userid]);
 		
 		$total_grade = 0;
@@ -511,7 +560,7 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	}	
 
 	$totals = skillsaudit_calculate_scores($cm->course, $userid);
-	//$html .= '<pre>' . print_r($this_topic, true) . '</pre>';
+	//$html .= '<pre>' . print_r($totals, true) . '</pre>';
 	$h = 120 * $totals['confidence'] / 100;
 	$d = 180 - (180 * $totals['confidence'] / 100);
 	$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
@@ -526,9 +575,18 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 		$html .= '<table class="table"><tr><th>Activity</th><th>Grade</th></tr>';
 		foreach($this_topic['breakdown'] as $grade) {
 			$PAGE->set_cm($cm);
-			$mod = get_coursemodule_from_instance($grade->itemmodule, $grade->iteminstance);
-			$url = $CFG->wwwroot . '/mod/' . $grade->itemmodule . '/view.php?id=' . $mod->id;
-			$html .= '<tr><td><a href="' . $url . '" target="_blank"><img class="iconlarge activityicon" src="' . $OUTPUT->pix_url('icon', 'mod_' . $grade->itemmodule) . '"> ' . $grade->itemname .'</a></td><td>' . round($grade->finalgrade,1) . '%</td></tr>';
+			$grade_str = "No grade";
+			if(!is_null($grade->finalgrade)) {
+				$grade_str = round($grade->finalgrade, 1) . "%";
+			}
+			if(!is_null($grade->itemmodule)) {
+				$mod = get_coursemodule_from_instance($grade->itemmodule, $grade->iteminstance);
+				$url = $CFG->wwwroot . '/mod/' . $grade->itemmodule . '/view.php?id=' . $mod->id;
+				$html .= '<tr><td><a href="' . $url . '" target="_blank"><img class="iconlarge activityicon" src="' . $OUTPUT->pix_url('icon', 'mod_' . $grade->itemmodule) . '"> ' . $grade->itemname .'</a></td><td>' . $grade_str . '</td></tr>';
+			} else {
+				$html .= '<tr><td>' . $grade->itemname .'</td><td>' . $grade_str . '</td></tr>';
+			}
+			
 		}
 		$html .= '</table>';
 		/*$html .= '<pre>';
