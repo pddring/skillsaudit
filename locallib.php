@@ -561,13 +561,14 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 
 	$totals = skillsaudit_calculate_scores($cm->course, $userid);
 	//$html .= '<pre>' . print_r($totals, true) . '</pre>';
+	
+	$html .= '<h3>Suggested target:</h3>' . $target;
+	$html .= '<div class="summary_target">';
 	$h = 120 * $totals['confidence'] / 100;
 	$d = 180 - (180 * $totals['confidence'] / 100);
 	$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
 	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>Total: <span class="summary_value">' . $totals['confidence'] . '%</span></h3></div>';
 
-	$html .= '<h3>Suggested target:</h3>' . $target;
-	$html .= '<div style="display:inline-block;vertical-align:top;width:60%;">';
 	$html .= '<p><strong>Confidence</strong> means how much you said you understood each learning objective.</p>
 		<p><strong>Coverage</strong> means how many learning objectives you have rated so far.</p>';
 	if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
@@ -615,7 +616,7 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	} else {
 		$charthtml = 'Refresh the page to see the latest chart';
 	}
-	$html .= '<div style="width:40%;display:inline-block;vertical-align:bottom">' . $charthtml . '</div>';
+	$html .= '<div class="summary_chart">' . $charthtml . '</div>';
 	
 
 	

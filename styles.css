@@ -8,6 +8,30 @@
 	display: block;
 }
 
+.summary_target {
+	display:inline-block;
+	vertical-align:top;
+	width:50%;
+}
+
+.summary_chart {
+	width:50%;
+	display:inline-block;
+	vertical-align:bottom;
+}
+
+@media only screen and (max-width: 800px) {
+  .summary_target {
+		display:block;
+		width:100%;
+	}
+
+	.summary_chart {
+		width:100%;
+		display:block;
+	}
+}
+
 #main_indicator {
 	position: absolute;
 	left: 0px;
@@ -149,9 +173,8 @@
 	position: relative;
 }
 #total_score {
-	position: absolute;
-    right: 10px;
-    top: 10px;
+	float:left;
+	margin: 10px;
 }
 
 .target_number {
