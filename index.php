@@ -112,7 +112,101 @@ echo('<h2>Summary</h2>');
 echo(skillsaudit_get_user_summary($COURSE, $USER));
 
 echo('<h2>Topic by topic</h2>');
-echo html_writer::table($table);
+echo(html_writer::table($table));
+
+
+$history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.iteminstance, gi.itemnumber, gi.itemname FROM grade_grades_history AS gh
+ 	JOIN grade_items AS gi ON gi.id = gh.itemid
+ 	WHERE gi.courseid=? AND gh.userid=?  AND gi.itemmodule='skillsaudit' AND gi.itemnumber=0 AND gh.source='mod/skillsaudit' AND NOT ISNULL(gi.itemname)
+ 	ORDER BY gh.timemodified
+ 	", [$course->id, $USER->id]);
+
+$confidence = ["titles"=>[], "ratings"=>[]];
+$earliest = time();
+foreach ($history as $h) {
+	if($h->timemodified < $earliest) {
+		$earliest = $h->timemodified;
+	}
+
+	$confidence["titles"][$h->iteminstance] = $h->itemname;
+	
+}
+
+$times = [];
+$data = [];
+for($t = $earliest; $t <= time() + 604800; $t+=604800) {
+	$times[] = array($t, date("j M Y", $t));
+	$data[] = 0;
+}
+
+foreach(array_keys($confidence["titles"]) as $t) {
+	$confidence["ratings"][$t] = $data;
+}
+
+function get_time_id($timestamp) {
+	global $times;
+	for($i = 0; $i < count($times); $i++) {
+		if($times[$i][0] > $timestamp) {
+			return $i;
+		}
+	}
+	return $i;
+}
+
+foreach($history as $h) {
+	$h->timeid = get_time_id($h->timemodified);
+	for($i = $h->timeid; $i < count($times); $i++) {
+		$confidence["ratings"][$h->iteminstance][$i] = round($h->rawgrade);	
+	}
+	
+}
+
+
+
+/*$timeid = 0;
+foreach($history as $h) {
+	//while($h->timemodified > $times[$timeid][0]) {
+	//	$timeid++;
+	//}/
+	if($h->itemnumber == 0) {
+		$coverage["ratings"][$h->iteminstance][$timeid] = $h->rawgrade;
+	} 
+
+	/*if($h->itemnumber == 2) {
+		$confidence["titles"][$h->iteminstance] = $h->itemname;
+	}
+}*/
+
+//echo('<pre>');
+//print_r($history);
+//print_r($confidence);
+ //echo('</pre>');
+
+$chart = new \core\chart_line();
+$chart->set_title("Confidence:");
+
+$axis = $chart->get_yaxis(0, true);
+$axis->set_min(0);
+$axis->set_max(100);
+
+
+
+$labels = [];
+$data = [];
+for($i = 0; $i < count($times); $i++) {
+	$labels[] = $times[$i][1];
+	$data[] = $i;
+}
+
+foreach(array_keys($confidence["titles"]) as $t) {
+	$chart->add_series(new core\chart_series($confidence["titles"][$t], $confidence["ratings"][$t]));
+}
+
+$chart->set_labels($labels);
+echo $OUTPUT->render($chart);
+
+
+
 if(!$nohead) {
 	echo $OUTPUT->footer();
 }

@@ -72,20 +72,22 @@ function skillsaudit_get_user_summary($course, $user) {
 		$row[] = skillsaudit::get_rating_bar($coverage, 'Coverage');
 		$row[] = skillsaudit::get_rating_bar($confidence, 'Confidence');
 		
-		if(count($modinfo->instances['skillsaudit']) > 1) {
-
-
-			if($total > $strongest['total']) {
-				$strongest['total'] = $total;
-				array_unshift($row, '<h3>Your strongest area:</h3> ');
-				$strongest['row'] = $row;
-			}
-		}
+		
 		
 		if($total < $weakest['total']) {
 			$weakest['total'] = $total;
 			array_unshift($row, '<h3>Suggested target:</h3> ');
 			$weakest['row'] = $row;
+		} else {
+			if(count($modinfo->instances['skillsaudit']) > 1) {
+
+
+				if($total > $strongest['total']) {
+					$strongest['total'] = $total;
+					array_unshift($row, '<h3>Your strongest area:</h3> ');
+					$strongest['row'] = $row;
+				}
+			}
 		}
 	}
 	
@@ -101,7 +103,7 @@ function skillsaudit_get_user_summary($course, $user) {
 function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 	global $DB;
 	
-	$html = skillsaudit_get_summary_html($cm, $userid);
+	$html = skillsaudit_get_summary_html($cm, $userid, false);
 	ob_start();
 	// specific skill
 	if($skillid > 0) {
@@ -392,26 +394,52 @@ function skillsaudit_get_tracking_table_old($cm, $group, $skills, $highlight) {
 	return $html;
 }
 
+function skillsaudit_time_ago($timestamp) {
+	if($timestamp > 0) { 
+		$diff = (time() - $timestamp) / 86400;
+		if($diff < 1) {
+			$i = round($diff * 24);
+			return $i . ' hour' . ($i > 1?'s':'') . ' ago';
+		} else {
+			if($diff > 14) {
+				$i = round($diff / 7);
+				return $i . ' week' . ($i > 1?'s':'') . ' ago';
+			} else {
+				$i = round($diff);
+				return $i . ' day' . ($i > 1?'s':'') . ' ago';
+			}
+		} 
+	} else {
+		return "never";
+	}
+}
+
 function skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight = "") {
+	function get_rating_bar($percentage) {
+		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
+		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span></span>';
+	}
+
+	$show_status = false;
+	if($highlight !== "") {
+		$show_status = true;
+	}
+
 	global $DB, $CFG;
 	$start = microtime(true);
-	$html = '';
 
-	// create table
-	$table = new html_table();
-	$table->attributes['class'] = 'generaltable mod_index';
-	$table->head  = array ('Student', 'This topic', 'Individual skills', 'Whole course');
-	$table->headspan = array(1, 3, count($skills), 2);
-	$table->align = array ('left');
-
-	// add each skill as a header
-	$row = array('Name', 'Confidence', 'Competence', 'Coverage');
+	$html = '<table class="rating_table table table-bordered"><thead>';
+	$html .= '<tr><th>Student</th><th colspan="3">This topic</th><th colspan="' . count($skills) . '">Individual skills</th></tr>';
+	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">Confidence</th><th class="r_sortable" data-col="competence">Competence</th><th class="r_sortable" data-col="coverage">Coverage</th>';
 	foreach($skills as $skill) {
-		$row[] = s($skill->number);
+		$link = s($skill->number);
+		if(strlen($skill->link) > 1) {
+			$link = '<a href="' . $skill->link . '" target="_blank">' . $skill->number . '</a>';
+		}
+		$html .= '<th data-toggle="tooltip" class="r_sortable" data-col="skill_' . $skill->id . '" title="' . s($skill->description) . '">. ' . $link . '</th>';
 	}
-	$row[] = 'Confidence';
-	$row[] = 'Coverage';
-	$table->data[] = $row;
+	$html .= '</tr></thead>';
+	$html .= '<tbody>';
 
 
 	// get users in group
@@ -420,18 +448,97 @@ function skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight = "
 	$course = $DB->get_record('course', array('id' => $cm->course));
 
 	foreach($users as $user) {
-		//$row = [htmlwriter::link(s($user->firstname . " " . $user->lastname))];
-		$table->data[] = $row;
+		$user_url = $CFG->wwwroot . '/user/profile.php?id=' . $user->id;
+		$html .= '<tr><td class="rating_td " data-sortable="' . s($user->lastname . ' ' . $user->firstname) .'" data-col="name" id="rating_td_0_' . $user->id . '_name">' . html_writer::link($user_url, s($user->firstname . " " . $user->lastname)) . '</td>';
+
+		$this_topic = skillsaudit_calculate_scores($cm->course, $user->id, $cm);
+
+		$html .= '<td class="rating_td" data-col="confidence" data-sortable="' . $this_topic['confidence'] . '" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($this_topic['confidence']) . ' ' .$this_topic['confidence'] . '%</td>';
+
+		$html .= '<td class="rating_td" data-col="competence" data-sortable="' . $this_topic['competence'] . '" id="rating_td_0_' . $user->id . '_competence">' . get_rating_bar($this_topic['competence']) . ' ' .$this_topic['competence'] . '%';
+
+		$html .= '</td>';
+
+		$html .= '<td class="rating_td" data-col="coverage" data-sortable="' . $this_topic['coverage'] . '" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($this_topic['coverage']) . ' ' . $this_topic['coverage'] . '%</td>';
+		
+
+		foreach($skills as $skill) {
+			$r = '';
+			$confidence = 0;
+			$time_ago = '';
+			$num_ratings = 0;
+
+			$status = "no";
+			if(isset($this_topic['ratings'][$skill->id])) {
+				$r = $this_topic['ratings'][$skill->id];
+				$confidence = $r->confidence;
+			}
+			
+			$html .= '<td class="rating_td" data-sortable="' . $confidence . '" data-col="skill_' . $skill->id . '" id="rating_td_' . $skill->id .'_' . $user->id . '" data-toggle="tooltip" title="' . s($skill->description) . '">';
+		
+			if(isset($this_topic['ratings'][$skill->id])) {
+				$time_ago = skillsaudit_time_ago($r->timestamp);
+				$num_ratings = $r->ratings;
+
+				$latest_hue = 'hsl(' . round($r->latest * 120.0 / 100.0) . ', 100%, 50%)';
+				$background = 'linear-gradient(to right,red,hsl(' . $latest_hue .',100%,50%))';
+				$lowest_hue = 'hsl(' . round($r->lowest * 120.0 / 100.0) . ', 100%, 50%)';
+				$html .= '<span class="conf_ind_cont"><span class="conf_ind" id="conf_ind_' . $skill->id . '_' . $user->id . '" style="width:' . $r->latest . '%; background: ' . $latest_hue . '"></span>';
+				$html .= '<div class="conf_ind_lowest" id="conf_ind_lowest_' . $skill->id . '_' . $user->id . '" style="left:' . $r->lowest . '%;background: ' . $lowest_hue . '"></div>';
+							
+				$html .= '</span>';
+
+				$diff = (time() - $r->timestamp) / 86400;
+				if($highlight == "today") {
+					if($diff < 1) {
+						$status = "yes";
+					}
+				}
+				
+				if($highlight == "one") {
+					if($r->ratings >=1) {
+						$status = "yes";
+					}
+				}
+				
+				if($highlight == "two") {
+					if($r->ratings >=2) {
+						$status = "yes";
+					}
+				}
+			}
+
+			$html .= '<span class="num_ratings">' . $num_ratings . '</span> ';
+
+			if($show_status) {
+				$html .= '<div class="conf_ind_status conf_ind_status_' . $status . '"></div>';
+			}
+			
+			$html .= '<div class="latest_rating_time">' . $time_ago . '</div>';
+//			$html .= '<pre>' . print_r($r, true) . '</pre>';
+			
+			$html .= '</td>';
+
+
+		}
+
+		//$html .= '<pre>' . print_r($this_topic, true) . '</pre>';
+
+		$html .= '</tr>';
 	}
 
 
-	$html .= html_writer::table($table);
+	$html .= '</tbody></table>';
 	//$html .= '<pre>' . print_r($skills, true) . '</pre>';
 	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
 	return $html;
 }
 
 function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
+	global $USER;
+	if($USER->id == 2) {
+		return skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight);
+	}
 	return skillsaudit_get_tracking_table_old($cm, $group, $skills, $highlight);
 }
 
@@ -445,11 +552,16 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 	$lastupdated = 0;
 
 	if($cm != NULL) { // get skills for a specific skilsaudit
-		$skills = $DB->get_records_sql("SELECT s.*, r.confidence, r.timestamp, sk.description, sk.number, sk.link FROM {skillsinaudit} AS s 
+		$skills = $DB->get_records_sql("SELECT sk.id, r.userid, r.confidence, r.timestamp, sk.description, sk.number, sk.link,
+			(SELECT COUNT(id) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS ratings, 
+			(SELECT MIN(confidence) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS lowest,
+			(SELECT MAX(confidence) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS highest,
+			(SELECT confidence FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid ORDER BY timestamp DESC LIMIT 1) AS latest
+			FROM {skillsinaudit} AS s 
 			LEFT JOIN {skillsauditrating} AS r ON s.skillid = r.skillid
 			JOIN {skills} AS sk ON s.skillid = sk.id 
-			WHERE s.auditid=?
-			ORDER BY sk.number DESC", [$cm->instance]);
+			WHERE s.auditid=? AND r.userid=?
+			ORDER BY sk.number DESC", [$cm->instance, $userid]);
 
 		// get all grade items in the same category that aren't for a skillsaudit
 		$categoryid = $DB->get_field_sql("SELECT categoryid FROM {grade_items} 
@@ -473,7 +585,10 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 					$valid_grades++;
 				}
 			}
-			$competence = $total_grade / $valid_grades;
+			if($valid_grades > 0) {
+				$competence = $total_grade / $valid_grades;	
+			}
+			
 		}
 
 	} else {
@@ -527,7 +642,9 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 			"competence" => round($competence, 1),
 			"breakdown" => $grades,
 			"target" => $target,
-			"lastupdated" => $lastupdated);	
+			"lastupdated" => $lastupdated,
+			"ratings" => $skills
+		);	
 	}
 	
 

@@ -126,6 +126,13 @@
 	transition: all 2s;
 }
 
+.num_ratings {
+	position: absolute;
+	right: 2px;
+	top: 2px;
+	font-size: 0.6em;
+}
+
 .skill_included_yes {
 	background-image: url([[pix:skillsaudit|tick]]);
 	background-repeat: no-repeat;
@@ -199,6 +206,7 @@
 
 .latest_rating_time {
 	opacity: 0.5;
+	font-size: 0.8em;
 }
 
 .conf_ind_lowest {
