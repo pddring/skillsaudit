@@ -30,14 +30,18 @@ require_once("$CFG->libdir/gradelib.php");
 defined('MOODLE_INTERNAL') || die();
 
 class skillsaudit {
-	public static function get_rating_bar($percentage, $label) {
+	public static function get_rating_bar($percentage, $label, $size="normal") {
 		/*$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
 		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span>';*/
 		
 		$h = 120 * $percentage / 100;
 		$d = 180 - (180 * $percentage / 100);
 		$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
-		$html = '<span class="wrist"><span class="thumb" style="' . $style . '"></span></span><p>' . $label . ' <span class="summary_value">' . $percentage . '%</span></p>';
+		$thumbclass = "thumb";
+		if($size == "small") {
+			$thumbclass = "minithumb";
+		}
+		$html = '<span class="wrist"><span class="' . $thumbclass . '" style="' . $style . '"></span></span><p>' . $label . ' <span class="summary_value">' . $percentage . '%</span></p>';
 		return $html;
 	}
 }
@@ -414,7 +418,7 @@ function skillsaudit_time_ago($timestamp) {
 	}
 }
 
-function skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight = "") {
+function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	function get_rating_bar($percentage) {
 		$background = 'linear-gradient(to right,red,hsl(' . round($percentage * 120.0 / 100.0) .',100%,50%))';
 		return '<span class="conf_ind_cont" title="' . $percentage . '"><span class="conf_ind" style="width:' . $percentage . '%; background: ' . $background . '"></span></span>';
@@ -532,14 +536,6 @@ function skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight = "
 	//$html .= '<pre>' . print_r($skills, true) . '</pre>';
 	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
 	return $html;
-}
-
-function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
-	global $USER;
-	if($USER->id == 2) {
-		return skillsaudit_get_tracking_table_new($cm, $group, $skills, $highlight);
-	}
-	return skillsaudit_get_tracking_table_old($cm, $group, $skills, $highlight);
 }
 
 // return ["confidence"=>percentage, "coverage"=>percentage, "competence"=>percentage, 
@@ -731,7 +727,21 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 		global $OUTPUT;	
 		$charthtml = $OUTPUT->render($chart);
 	} else {
-		$charthtml = 'Refresh the page to see the latest chart';
+		$charthtml = '';
+		
+
+		$charthtml .= '<table class="table"><thead><tr><th>This topic</th><th>Whole course</th></tr>';
+		$charthtml .= '<tbody>';
+		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['confidence'], 'Confidence', 'small') . '</td>';
+		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['confidence'], 'Confidence', 'small') . '</td></tr>';
+
+		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['coverage'], 'Coverage', 'small') . '</td>';
+		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['coverage'], 'Coverage', 'small') . '</td></tr>';
+
+		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['competence'], 'Competence', 'small') . '</td>';
+		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['competence'], 'Competence', 'small') . '</td></tr>';
+		
+		$charthtml .= '</tbody></table>';
 	}
 	$html .= '<div class="summary_chart">' . $charthtml . '</div>';
 	

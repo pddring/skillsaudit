@@ -244,6 +244,11 @@ define(['jquery', 'core/ajax'], function($, ajax) {
 				confidence = 0;
 				if(skills && skills[id] && skills[id].confidence)
 					confidence = skills[id].confidence;
+
+				var lo = $('#skill_description_' + id).text();
+				var number = $('#skill_row_' + id + ' .skillnumber').text();
+				$('.current_lo_title').text(number);
+				$('.current_lo').text(lo);
 					
 				drawChart(confidence);
 				$('#controls, #skill_row_' + id).fadeIn();

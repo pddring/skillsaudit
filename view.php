@@ -54,7 +54,7 @@ class confidence_rating_form extends moodleform {
 		$html .= '</div>';
 		$mform->addElement('html', $html);
 		
-		$mform->addElement('editor', 'comment', get_string("comment", "skillsaudit"));
+		$mform->addElement('editor', 'comment', get_string("comment", "skillsaudit") . '<div class="current_lo_holder"><div class="current_lo_title">Learning objective:</div><div class="current_lo"></div></div>');
 		$mform->setType('comment', PARAM_RAW);
 		
 		$mform->addElement('html', '<button class="btn btn-primary" id="btn_save_confidence">Save</button>
@@ -218,7 +218,7 @@ echo('<table class="generaltable"><tr><th>Number</th><th>Skill</th><th>Ratings</
 foreach($skills as $skill) {
 	$skill->hue = round($skill->confidence * 120.0 / 100.0);
 	echo('<tr class="skill_row" id="skill_row_' . $skill->id . '"><td class="skillnumber">' . $skill->number . '</td>');
-	echo('<td>' . $skill->description . $skill->ratings . '<div class="latest_rating_time">Last rated: ');
+	echo('<td><span id="skill_description_' . $skill->id . '">' . $skill->description . '</span>' . $skill->ratings . '<div class="latest_rating_time">Last rated: ');
 	if($skill->rating_count > 0) {
 		echo(formatDateDiff($skill->latest_rating));
 	} else {
@@ -234,10 +234,6 @@ foreach($skills as $skill) {
 echo('</table>');
 
 ?>
-
-      
-    
-      
       
       <?php 
 	  

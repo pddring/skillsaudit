@@ -57,6 +57,7 @@
 	transition: all 1s;
 	border: solid 1px #000;
 }
+
 .rating {
 	padding: 10px;
 	margin: 10px;
@@ -175,7 +176,6 @@
 .skillsaudit_user_summary {
 	background-color: #fff;
 	border: solid 2px #000;
-	margin: 10px;
 	padding: 10px;
 	position: relative;
 }
@@ -331,4 +331,22 @@
     position: absolute;
     bottom: 10px;
     right: 10px;
+}
+
+.modal-dialog {
+	max-width: 80% !important;
+}
+
+.current_lo_title {
+	font-size: 2em;
+} 
+
+.current_lo_holder {
+	background-color: #EFE;
+	padding: 10px;
+	margin: 10px;
+}
+
+.current_lo {
+
 }
