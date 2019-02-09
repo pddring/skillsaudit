@@ -737,10 +737,10 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 
 		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['coverage'], 'Coverage', 'small') . '</td>';
 		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['coverage'], 'Coverage', 'small') . '</td></tr>';
-
-		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['competence'], 'Competence', 'small') . '</td>';
-		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['competence'], 'Competence', 'small') . '</td></tr>';
-		
+		if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
+			$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['competence'], 'Competence', 'small') . '</td>';
+			$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['competence'], 'Competence', 'small') . '</td></tr>';
+		}
 		$charthtml .= '</tbody></table>';
 	}
 	$html .= '<div class="summary_chart">' . $charthtml . '</div>';
