@@ -456,6 +456,14 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		$html .= '<tr><td class="rating_td " data-sortable="' . s($user->lastname . ' ' . $user->firstname) .'" data-col="name" id="rating_td_0_' . $user->id . '_name">' . html_writer::link($user_url, s($user->firstname . " " . $user->lastname)) . '</td>';
 
 		$this_topic = skillsaudit_calculate_scores($cm->course, $user->id, $cm);
+		
+		if(!isset($this_topic['confidence'])) {
+			$html .= '<td></td><td></td><td></td>';
+			foreach($skills as $skill) {
+				$html .= '<td></td>';
+			}
+			continue;
+		}
 
 		$html .= '<td class="rating_td" data-col="confidence" data-sortable="' . $this_topic['confidence'] . '" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($this_topic['confidence']) . ' ' .$this_topic['confidence'] . '%</td>';
 
@@ -549,10 +557,10 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 
 	if($cm != NULL) { // get skills for a specific skilsaudit
 		$skills = $DB->get_records_sql("SELECT sk.id, r.userid, r.confidence, r.timestamp, sk.description, sk.number, sk.link,
-			(SELECT COUNT(id) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS ratings, 
-			(SELECT MIN(confidence) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS lowest,
-			(SELECT MAX(confidence) FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid) AS highest,
-			(SELECT confidence FROM skillsauditrating WHERE skillid=r.skillid AND userid=r.userid ORDER BY timestamp DESC LIMIT 1) AS latest
+			(SELECT COUNT(id) FROM {skillsauditrating} WHERE skillid=r.skillid AND userid=r.userid) AS ratings, 
+			(SELECT MIN(confidence) FROM {skillsauditrating} WHERE skillid=r.skillid AND userid=r.userid) AS lowest,
+			(SELECT MAX(confidence) FROM {skillsauditrating} WHERE skillid=r.skillid AND userid=r.userid) AS highest,
+			(SELECT confidence FROM {skillsauditrating} WHERE skillid=r.skillid AND userid=r.userid ORDER BY timestamp DESC LIMIT 1) AS latest
 			FROM {skillsinaudit} AS s 
 			LEFT JOIN {skillsauditrating} AS r ON s.skillid = r.skillid
 			JOIN {skills} AS sk ON s.skillid = sk.id 
