@@ -115,8 +115,8 @@ echo('<h2>Topic by topic</h2>');
 echo(html_writer::table($table));
 
 
-$history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.iteminstance, gi.itemnumber, gi.itemname FROM grade_grades_history AS gh
- 	JOIN grade_items AS gi ON gi.id = gh.itemid
+$history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.iteminstance, gi.itemnumber, gi.itemname  {grade_grades_history} AS gh
+ 	JOIN {grade_items} AS gi ON gi.id = gh.itemid
  	WHERE gi.courseid=? AND gh.userid=?  AND gi.itemmodule='skillsaudit' AND gi.itemnumber=0 AND gh.source='mod/skillsaudit' AND NOT ISNULL(gi.itemname)
  	ORDER BY gh.timemodified
  	", [$course->id, $USER->id]);
