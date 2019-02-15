@@ -450,9 +450,14 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 
 	} else {
 		// get all learning objectives
-		$skills = $DB->get_records_sql("SELECT s.*, r.confidence, r.timestamp FROM {skills} AS s 
-			LEFT JOIN {skillsauditrating} AS r ON s.id = r.skillid
-			WHERE s.courseid=?", [$courseid]);
+		$skills = $DB->get_records_sql("SELECT sk.id AS skillid, sk.description, sk.number, sk.link,
+				(SELECT COUNT(id) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS ratings,
+			    (SELECT MIN(confidence) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS lowest,
+			    (SELECT MAX(confidence) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS highest,
+			    (SELECT confidence FROM {skillsauditrating} WHERE skillid=sk.id AND userid=? ORDER BY timestamp DESC LIMIT 1) AS confidence,
+			    (SELECT timestamp FROM {skillsauditrating} WHERE skillid=sk.id AND userid=? ORDER BY timestamp DESC LIMIT 1) AS timestamp
+    			FROM {skills} AS sk 
+		    WHERE sk.courseid=?", [$userid, $userid, $userid, $userid, $userid, $courseid]);
 
 		$grades = $DB->get_records_sql("SELECT gi.id, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule 
 			FROM {grade_items} AS gi 
