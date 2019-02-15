@@ -33,17 +33,21 @@ require_once(dirname(__FILE__).'/lib.php');
 
 $id = required_param('id', PARAM_INT); // Course.
 $nohead = optional_param('nohead', 0, PARAM_INT);
+$userid = optional_param('user', $USER->id, PARAM_INT);
+$groupid = optional_param('group', 0, PARAM_INT);
 
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
 require_course_login($course);
-
+error_reporting(0);
+$context = context_course::instance($course->id);
 $params = array(
-    'context' => context_course::instance($course->id)
+    'context' => $context
 );
 $event = \mod_skillsaudit\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
+
 
 $strname = get_string('modulenameplural', 'mod_skillsaudit');
 
@@ -57,6 +61,58 @@ if(!$nohead) {
 	echo $OUTPUT->header();
 	echo $OUTPUT->heading($strname);
 }
+$showing_user = $USER;
+
+$can_track = has_capability('mod/skillsaudit:trackratings', $context);
+if($can_track) {
+	echo('Group:');
+	$groups = groups_get_all_groups($COURSE->id);
+	echo('<div>');
+	echo('<form class="inline">');
+	echo('<select name="group">');
+	$all_users = new stdClass();
+	$all_users->id = 0;
+	$all_users->name = "All users";
+	array_unshift($groups, $all_users);
+	foreach($groups as $group) {
+		if($group->id == $groupid) {
+			echo('<option value="' . $group->id . '" selected>' . s($group->name) . '</option>');
+		} else {
+			echo('<option value="' . $group->id . '">' . s($group->name) . '</option>');
+		}
+		
+	}
+	echo('</select>');
+	echo('<input type="hidden" value="' . $id . '" name="id">');
+	echo('<button type="submit" class="btn btn-primary">Update</button>');
+	echo('</form> ');
+
+	echo('User:');
+	$users = get_enrolled_users($context, 'mod/skillsaudit:submit', $groupid);
+	echo('<form class="inline">');
+	echo('<input type="hidden" value="' . $id . '" name="id">');
+	echo('<select name="user">');
+	
+	foreach($users as $user) {
+		if($user->id == $userid) {
+			echo('<option value="' . $user->id . '" selected>' . s($user->firstname . " " . $user->lastname) . '</option>');
+			$showing_user = $user;
+		} else {
+			echo('<option value="' . $user->id . '">' . s($user->firstname . " " . $user->lastname) . '</option>');
+		}
+		
+	}
+	echo('</select>');
+	echo('<button type="submit" class="btn btn-primary">View</button>');
+	echo('</form>');
+	echo('</div>');
+//	print_r($users);
+} else {
+	$userid = $USER->id;
+}
+
+
+
 if (! $skillsaudits = get_all_instances_in_course('skillsaudit', $course)) {
     notice(get_string('noskillsaudits', 'skillsaudit'), new moodle_url('/course/view.php', array('id' => $course->id)));
 }
@@ -77,6 +133,8 @@ $table->align = array ('left');
 
 
 $modinfo = get_fast_modinfo($course);
+$target_confidence = 100;
+$target_html = '';
 foreach ($modinfo->instances['skillsaudit'] as $cm) {
     $row = array();
     if ($usesections) {
@@ -95,31 +153,39 @@ foreach ($modinfo->instances['skillsaudit'] as $cm) {
 
     $row[] = html_writer::link(new moodle_url('view.php', array('id' => $cm->id)),
                 '<img src="' . $cm->get_icon_url() . '"> ' . $cm->get_formatted_name(), $class);
+    $summary_html = skillsaudit_get_summary_html($cm, $showing_user->id, true);
+
 				
-	$grading_info = grade_get_grades($course->id, 'mod', 'skillsaudit', $cm->instance, array($USER->id));
+	$grading_info = grade_get_grades($course->id, 'mod', 'skillsaudit', $cm->instance, array($showing_user->id));
  
 	$grade_item_grademax = $grading_info->items[0]->grademax;
-	$confidence = intval($grading_info->items[0]->grades[$USER->id]->grade);
-	$coverage = intval($grading_info->items[2]->grades[$USER->id]->grade);
-	$progress = intval($grading_info->items[1]->grades[$USER->id]->grade);
+	$confidence = intval($grading_info->items[0]->grades[$showing_user->id]->grade);
+	if($confidence < $target_confidence) {
+		$target_confidence = $confidence;
+		$target_html = $summary_html;
+	}
+
+	$coverage = intval($grading_info->items[2]->grades[$showing_user->id]->grade);
+	$progress = intval($grading_info->items[1]->grades[$showing_user->id]->grade);
 	$total = $coverage * $confidence / 100;
 	$row[] = get_rating_bar($coverage);
 	$row[] = get_rating_bar($confidence);
 	$row[] = get_rating_bar($progress);
     $table->data[] = $row;
 }
-echo('<h2>Summary</h2>');
-echo(skillsaudit_get_user_summary($COURSE, $USER));
+echo('<h2>Summary for ' . s($showing_user->firstname . " " . $showing_user->lastname) . '</h2>');
+echo(skillsaudit_get_user_summary($COURSE, $showing_user));
+echo('<div class="skillsaudit_user_summary">' . $target_html . '</div>');
 
 echo('<h2>Topic by topic</h2>');
 echo(html_writer::table($table));
 
 
-$history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.iteminstance, gi.itemnumber, gi.itemname  {grade_grades_history} AS gh
+$history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.iteminstance, gi.itemnumber, gi.itemname FROM {grade_grades_history} AS gh
  	JOIN {grade_items} AS gi ON gi.id = gh.itemid
  	WHERE gi.courseid=? AND gh.userid=?  AND gi.itemmodule='skillsaudit' AND gi.itemnumber=0 AND gh.source='mod/skillsaudit' AND NOT ISNULL(gi.itemname)
  	ORDER BY gh.timemodified
- 	", [$course->id, $USER->id]);
+ 	", [$course->id, $showing_user->id]);
 
 $confidence = ["titles"=>[], "ratings"=>[]];
 $earliest = time();

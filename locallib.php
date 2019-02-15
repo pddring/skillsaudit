@@ -80,22 +80,24 @@ function skillsaudit_get_user_summary($course, $user) {
 		
 		if($total < $weakest['total']) {
 			$weakest['total'] = $total;
-			array_unshift($row, '<h3>Suggested target:</h3> ');
 			$weakest['row'] = $row;
-		} else {
+		} 
 			if(count($modinfo->instances['skillsaudit']) > 1) {
 
 
 				if($total > $strongest['total']) {
-					$strongest['total'] = $total;
-					array_unshift($row, '<h3>Your strongest area:</h3> ');
+					$strongest['total'] = $total;				
 					$strongest['row'] = $row;
 				}
 			}
-		}
+		
+	}
+	array_unshift($weakest['row'], '<h3>Area to focus on:</h3> ');
+	if($strongest['total'] > 0) {
+		array_unshift($strongest['row'], '<h3>Your strongest area:</h3> ');
+		$table->data[] = $strongest['row'];	
 	}
 	
-	$table->data[] = $strongest['row'];
 	$table->data[] = $weakest['row'];
 	/*$coverage = 0;
 	$confidence = 0;
@@ -551,7 +553,19 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 // if $cm is NULL then stats will be calculated for the whole course
 function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 	global $DB;
-	$scores = [0,0,0];
+	$t = new stdClass();
+	$t->link = '';
+	$t->number = '';
+	$t->description = 'Rate your confidence for each learning objective';
+	$scores = array(
+			"confidence" => 0, 
+			"coverage" => 0, 
+			"competence" => 0,
+			"breakdown" => array(),
+			"target" => $t,
+			"lastupdated" => time(),
+			"ratings" => array()
+		);	
 	$competence = 0;
 	$lastupdated = 0;
 
@@ -657,7 +671,6 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 
 function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	global $DB, $CFG, $OUTPUT, $PAGE;
-	
 	$html = '';
 		
 	$target = '';
@@ -672,13 +685,15 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	
 	$this_topic = skillsaudit_calculate_scores($cm->course, $userid, $cm);
 
-	if(!is_null($this_topic['target']) > 0) {
+	if(array_key_exists('target', $this_topic)) {
 		$help = '';
 		if($this_topic['target']->link) {
 			$help .= '<a title="Click here for more info" href="' . $this_topic['target']->link . '" target="_blank"><span class="info_icon"></span></a>';
 		}
 		$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $this_topic['target']->number . '</span> <span class="target_description">' . $this_topic['target']->description . '</span>' . $help . '</div>';
-	}	
+	} else {
+		$html .= '<pre>' . print_r($this_topic) . '</pre>';
+	}
 
 	$totals = skillsaudit_calculate_scores($cm->course, $userid);
 	//$html .= '<pre>' . print_r($totals, true) . '</pre>';
@@ -692,11 +707,18 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 
 	$html .= '<p><strong>Confidence</strong> means how much you said you understood each learning objective.</p>
 		<p><strong>Coverage</strong> means how many learning objectives you have rated so far.</p>';
+
+//$html .= '<pre>' . print_r($PAGE->context, true) . '</pre>';
+//			if(!$PAGE->context->__isset('instanceid')) {
+				$PAGE->set_cm($cm);	
+				
+				
+//			}
 	if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
 		$html .= '<p><strong>Competence</strong> means your average test score or grade from these activities:</td></p>';
 		$html .= '<table class="table"><tr><th>Activity</th><th>Grade</th></tr>';
 		foreach($this_topic['breakdown'] as $grade) {
-			$PAGE->set_cm($cm);
+			
 			$grade_str = "No grade";
 			if(!is_null($grade->finalgrade)) {
 				$grade_str = round($grade->finalgrade, 1) . "%";
