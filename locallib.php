@@ -73,8 +73,8 @@ function skillsaudit_get_user_summary($course, $user) {
 		$coverage = intval($grading_info->items[2]->grades[$user->id]->grade);
 		$total = $coverage * $confidence / 100;
 		
-		$row[] = skillsaudit::get_rating_bar($coverage, 'Coverage');
-		$row[] = skillsaudit::get_rating_bar($confidence, 'Confidence');
+		$row[] = skillsaudit::get_rating_bar($coverage, get_string('coverage', 'mod_skillsaudit'));
+		$row[] = skillsaudit::get_rating_bar($confidence, get_string('confidence', 'mod_skillsaudit'));
 		
 		
 		
@@ -92,9 +92,9 @@ function skillsaudit_get_user_summary($course, $user) {
 			}
 		
 	}
-	array_unshift($weakest['row'], '<h3>Area to focus on:</h3> ');
+	array_unshift($weakest['row'], '<h3>' . get_string('areatofocuson', 'mod_skillsaudit') . ':</h3> ');
 	if($strongest['total'] > 0) {
-		array_unshift($strongest['row'], '<h3>Your strongest area:</h3> ');
+		array_unshift($strongest['row'], '<h3>' . get_string('strongestarea', 'mod_skillsaudit') . ':</h3> ');
 		$table->data[] = $strongest['row'];	
 	}
 	
@@ -117,7 +117,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
 		$options = explode(",", $audit->options);
 		$num_options = count($options) - 1;
-		$html .= '<table class="table"><thead><tr><th>Date:</th><th>Confidence:</th></tr></thead><tbody>';
+		$html .= '<table class="table"><thead><tr><th>' . get_string('date', 'mod_skillsaudit') . ':</th><th>' . get_string('confidence', 'mod_skillsaudit') . ':</th></tr></thead><tbody>';
 		foreach($ratings as $rating) {
 			$html .= '<tr><td>' . date("D jS M Y g:i a", $rating->timestamp) . '</td>';		
 			$html .= '<td>';
@@ -143,7 +143,7 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		$audit = $DB->get_record('skillsaudit', array('id' => $cm->instance));
 		$options = explode(",", $audit->options);
 		$num_options = count($options) - 1;
-		$html .= '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">Whole course:</th></tr><tr><th>Date:</th><th>Coverage:</th><th>Confidence:</th><th>Coverage:</th><th>Confidence:</th></tr></thead><tbody>';
+		$html .= '<table class="table"><thead><tr><th></th><th colspan="2">This topic:</th><th colspan="2">' . get_string('wholecourse', 'mod_skillsaudit') . ':</th></tr><tr><th>' . get_string('date', 'mod_skillsaudit') . ':</th><th>' . get_string('coverage', 'mod_skillsaudit') . ':</th><th>' . get_string('confidence', 'mod_skillsaudit') . ':</th><th>' . get_string('coverage', 'mod_skillsaudit') . ':</th><th>' . get_string('confidence', 'mod_skillsaudit') . ':</th></tr></thead><tbody>';
 		
 		$coverage = 0;
 		$confidence = 0;
@@ -206,22 +206,22 @@ function skillsaudit_get_activity_summary($cm, $userid, $skillid) {
 		foreach($stats as $stat) {
 			//update_stats
 			$html .= '<tr><td>' . date("D jS M Y", $stat->date) . '</td>';		
-			$html .= '<td title="Coverage (This topic)">';
+			$html .= '<td title="' . get_string('coverage', 'mod_skillsaudit') . ' (' . get_string('thistopic', 'mod_skillsaudit') . ')">';
 			$html .= get_rating_html($stat->coverage);			
 			$html .= $stat->coverage . '%';
 			$html .= '</td>';
 			
-			$html .= '<td title="Confidence (This topic)">';
+			$html .= '<td title="' . get_string('confidence', 'mod_skillsaudit') . ' (' . get_string('thistopic', 'mod_skillsaudit') . ')">';
 			$html .= get_rating_html($stat->confidence);
 			$html .= $stat->confidence . '%';
 			$html .= '</td>';
 			
-			$html .= '<td title="Coverage (Whole course)">';
+			$html .= '<td title="' . get_string('coverage', 'mod_skillsaudit') . ' (' . get_string('wholecourse', 'mod_skillsaudit') . ')">';
 			$html .= get_rating_html($stat->course_coverage);			
 			$html .= $stat->course_coverage . '%';
 			$html .= '</td>';
 			
-			$html .= '<td title="Confidence (Whole course)">';
+			$html .= '<td title="' . get_string('confidence', 'mod_skillsaudit') . ' (' . get_string('wholecourse', 'mod_skillsaudit') . ')">';
 			$html .= get_rating_html($stat->course_confidence);
 			$html .= $stat->course_confidence . '%';
 			$html .= '</td>';
@@ -274,8 +274,8 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$start = microtime(true);
 
 	$html = '<table class="rating_table table table-bordered"><thead>';
-	$html .= '<tr><th>Student</th><th colspan="3">This topic</th><th colspan="' . count($skills) . '">Individual skills</th></tr>';
-	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">Confidence</th><th class="r_sortable" data-col="competence">Competence</th><th class="r_sortable" data-col="coverage">Coverage</th>';
+	$html .= '<tr><th>Student</th><th colspan="3">' . get_string('thistopic', 'mod_skillsaudit') . '</th><th colspan="' . count($skills) . '">' . get_string('individualskills', 'mod_skillsaudit') . '</th></tr>';
+	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">' . get_string('confidence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="competence">' . get_string('competence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="coverage">' . get_string('coverage', 'mod_skillsaudit') . '</th>';
 	foreach($skills as $skill) {
 		$link = s($skill->number);
 		if(strlen($skill->link) > 1) {
@@ -368,34 +368,26 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			}
 			
 			$html .= '<div class="latest_rating_time">' . $time_ago . '</div>';
-//			$html .= '<pre>' . print_r($r, true) . '</pre>';
 			
 			$html .= '</td>';
-
-
 		}
-
-		//$html .= '<pre>' . print_r($this_topic, true) . '</pre>';
 
 		$html .= '</tr>';
 	}
 
 
 	$html .= '</tbody></table>';
-	//$html .= '<pre>' . print_r($skills, true) . '</pre>';
 	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
 	return $html;
 }
 
-// return ["confidence"=>percentage, "coverage"=>percentage, "competence"=>percentage, 
-//"breakdown"=>stdClass of grades contributing to competence] for this topic
 // if $cm is NULL then stats will be calculated for the whole course
 function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 	global $DB;
 	$t = new stdClass();
 	$t->link = '';
 	$t->number = '';
-	$t->description = 'Rate your confidence for each learning objective';
+	$t->description = get_string('noratingstarget', 'mod_skillsaudit');
 	$scores = array(
 			"confidence" => 0, 
 			"coverage" => 0, 
@@ -476,7 +468,6 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 		}
 	}
 
-	
 	$count = count($skills);
 	if($count > 0) {
 		$total_confidence = 0;
@@ -518,52 +509,35 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	$html = '';
 		
 	$target = '';
-	
-	
-	/*
-	$h = 120 * $total_score / 100;
-	$d = 180 - (180 * $total_score / 100);
-	$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
-	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>Total: <span class="summary_value">' . $total_score . '%</span></h3></div>';
-	*/
-	
+		
 	$this_topic = skillsaudit_calculate_scores($cm->course, $userid, $cm);
-//	$html .= '<pre>' . print_r($this_topic, true) . '</pre>';
+
 	if(array_key_exists('target', $this_topic)) {
 		$help = '';
 		if($this_topic['target']->link) {
-			$help .= '<a title="Click here for more info" href="' . $this_topic['target']->link . '" target="_blank"><span class="info_icon"></span></a>';
+			$help .= '<a title="' . get_string('targetlinktooltip', 'mod_skillsaudit') . '" href="' . $this_topic['target']->link . '" target="_blank"><span class="info_icon"></span></a>';
 		}
 		$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $this_topic['target']->number . '</span> <span class="target_description">' . $this_topic['target']->description . '</span>' . $help . '</div>';
-	} else {
-//		$html .= '<pre>' . print_r($this_topic) . '</pre>';
-	}
+	} 
 
 	$totals = skillsaudit_calculate_scores($cm->course, $userid);
-///TODO: fix whole course coverage	$html .= '<pre>' . print_r($totals, true) . '</pre>';
 	
-	$html .= '<h3>Suggested target:</h3>' . $target;
+	$html .= '<h3>' . get_string('suggestedtarget', 'mod_skillsaudit') . ':</h3>' . $target;
 	$html .= '<div class="summary_target">';
 	$h = 120 * $totals['confidence'] / 100;
 	$d = 180 - (180 * $totals['confidence'] / 100);
 	$style = 'background-color: hsl(' . $h . ',100%,50%);transform:rotate(' . $d . 'deg)';
-	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>Total: <span class="summary_value">' . $totals['confidence'] . '%</span></h3></div>';
+	$html .= '<div id="total_score"><span class="wrist wiggle"><span class="thumb" style="' . $style . '"></span></span><h3>' . get_string('total', 'mod_skillsaudit') . ': <span class="summary_value">' . $totals['confidence'] . '%</span></h3></div>';
 
-	$html .= '<p><strong>Confidence</strong> means how much you said you understood each learning objective.</p>
-		<p><strong>Coverage</strong> means how many learning objectives you have rated so far.</p>';
+	$html .= '<p>' . get_string('aboutconfidence', 'mod_skillsaudit') . '</p><p>' . get_string('aboutcoverage', 'mod_skillsaudit') . '</p>';
+	$PAGE->set_cm($cm);	
 
-//$html .= '<pre>' . print_r($PAGE->context, true) . '</pre>';
-//			if(!$PAGE->context->__isset('instanceid')) {
-				$PAGE->set_cm($cm);	
-				
-				
-//			}
 	if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
-		$html .= '<p><strong>Competence</strong> means your average test score or grade from these activities:</td></p>';
+		$html .= '<p>' . get_string('aboutcoverage', 'mod_skillsaudit') . '</p>:';
 		$html .= '<table class="table"><tr><th>Activity</th><th>Grade</th></tr>';
 		foreach($this_topic['breakdown'] as $grade) {
 			
-			$grade_str = "No grade";
+			$grade_str = get_string('nograde', 'mod_skillsaudit');
 			if(!is_null($grade->finalgrade)) {
 				$grade_str = round($grade->finalgrade, 1) . "%";
 			}
@@ -577,26 +551,25 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 			
 		}
 		$html .= '</table>';
-		/*$html .= '<pre>';
-		$html .= print_r($this_topic['breakdown'], true);
-		$html .= '</pre>';*/
 	}
-	$html .= '<a href="' . $CFG->wwwroot . '/mod/skillsaudit/?id=' . $cm->course . '">View whole course summary</a>';
+	$html .= '<a href="' . $CFG->wwwroot . '/mod/skillsaudit/?id=' . $cm->course . '">' . get_string('viewcoursesummary', 'mod_skillsaudit') . '</a>';
 	$html .= '</div>';
 
 	
 	if($includechart) {
 		$chart = new core\chart_bar();
-		$chart->set_title("Summary:");
+		$chart->set_title(get_string('summary', 'mod_skillsaudit') . ":");
 
 		if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
-			$chart->add_series(new core\chart_series('This topic', [$this_topic["confidence"], $this_topic["coverage"], $this_topic["competence"]]));
-			$chart->add_series(new core\chart_series('Whole course', [$totals["confidence"], $totals["coverage"], $totals["competence"]]));
-			$chart->set_labels(["Confidence (%)", "Coverage (%)", "Competence (%)"]);
+			$chart->add_series(new core\chart_series(get_string('thistopic', 'mod_skillsaudit'), [$this_topic["confidence"], $this_topic["coverage"], $this_topic["competence"]]));
+			$chart->add_series(new core\chart_series(get_string('wholecourse', 'mod_skillsaudit'), [$totals["confidence"], $totals["coverage"], $totals["competence"]]));
+			$chart->set_labels([get_string('confidence', 'mod_skillsaudit') . " (%)", 
+				get_string('coverage', 'mod_skillsaudit') . " (%)", 
+				get_string('competence', 'mod_skillsaudit') . " (%)"]);
 		} else {
-			$chart->add_series(new core\chart_series('This topic', [$this_topic["confidence"], $this_topic["coverage"]]));
-			$chart->add_series(new core\chart_series('Whole course', [$totals["confidence"], $totals["coverage"]]));	
-			$chart->set_labels(["Confidence (%)", "Coverage (%)"]);
+			$chart->add_series(new core\chart_series(get_string('thistopic', 'mod_skillsaudit'), [$this_topic["confidence"], $this_topic["coverage"]]));
+			$chart->add_series(new core\chart_series(get_string('wholecourse', 'mod_skillsaudit'), [$totals["confidence"], $totals["coverage"]]));	
+			$chart->set_labels([get_string('confidence', 'mod_skillsaudit') . " (%)", get_string('coverage', 'mod_skillsaudit') . " (%)"]);
 		}
 		global $OUTPUT;	
 		$charthtml = $OUTPUT->render($chart);
@@ -604,16 +577,16 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 		$charthtml = '';
 		
 
-		$charthtml .= '<table class="table"><thead><tr><th>This topic</th><th>Whole course</th></tr>';
+		$charthtml .= '<table class="table"><thead><tr><th>' . get_string('thistopic', 'mod_skillsaudit') . '</th><th>' . get_string('wholecourse', 'mod_skillsaudit') . '</th></tr>';
 		$charthtml .= '<tbody>';
-		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['confidence'], 'Confidence', 'small') . '</td>';
-		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['confidence'], 'Confidence', 'small') . '</td></tr>';
+		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['confidence'], get_string('confidence', 'mod_skillsaudit'), 'small') . '</td>';
+		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['confidence'], get_string('confidence', 'mod_skillsaudit'), 'small') . '</td></tr>';
 
-		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['coverage'], 'Coverage', 'small') . '</td>';
-		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['coverage'], 'Coverage', 'small') . '</td></tr>';
+		$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['coverage'], get_string('coverage', 'mod_skillsaudit'), 'small') . '</td>';
+		$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['coverage'], get_string('coverage', 'mod_skillsaudit'), 'small') . '</td></tr>';
 		if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
-			$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['competence'], 'Competence', 'small') . '</td>';
-			$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['competence'], 'Competence', 'small') . '</td></tr>';
+			$charthtml .= '<tr><td>' . skillsaudit::get_rating_bar($this_topic['competence'], get_string('competence', 'mod_skillsaudit'), 'small') . '</td>';
+			$charthtml .= '<td>' . skillsaudit::get_rating_bar($totals['competence'], get_string('competence', 'mod_skillsaudit'), 'small') . '</td></tr>';
 		}
 		$charthtml .= '</tbody></table>';
 	}
@@ -752,14 +725,3 @@ function skillsaudit_get_rating_html($rating, $can_clear_rating, $can_delete_rat
 	$html .='</div>';
 	return $html;
 }
-
-
-/*
- * Does something really useful with the passed things
- *
- * @param array $things
- * @return object
- *function skillsaudit_do_something_useful(array $things) {
- *    return new stdClass();
- *}
- */
