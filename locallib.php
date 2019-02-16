@@ -293,8 +293,8 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$course = $DB->get_record('course', array('id' => $cm->course));
 
 	foreach($users as $user) {
-		$user_url = $CFG->wwwroot . '/user/profile.php?id=' . $user->id;
-		$html .= '<tr><td class="rating_td " data-sortable="' . s($user->lastname . ' ' . $user->firstname) .'" data-col="name" id="rating_td_0_' . $user->id . '_name">' . html_writer::link($user_url, s($user->firstname . " " . $user->lastname)) . '</td>';
+		$user_url = $CFG->wwwroot . '/mod/skillsaudit/?id=' . $cm->course . '&user=' . $user->id;
+		$html .= '<tr><td class="rating_td " data-sortable="' . s($user->lastname . ' ' . $user->firstname) .'" data-col="name" id="rating_td_0_' . $user->id . '_name"><a href="' . $user_url . '" target="_blank">' . s($user->firstname . " " . $user->lastname) . '</a></td>';
 
 		$this_topic = skillsaudit_calculate_scores($cm->course, $user->id, $cm);
 		
