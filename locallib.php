@@ -533,7 +533,7 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	$PAGE->set_cm($cm);	
 
 	if(count($totals["breakdown"]) > 0 && count($this_topic["breakdown"]) > 0) {
-		$html .= '<p>' . get_string('aboutcoverage', 'mod_skillsaudit') . '</p>:';
+		$html .= '<p>' . get_string('aboutcompetence', 'mod_skillsaudit') . ':</p>';
 		$html .= '<table class="table"><tr><th>Activity</th><th>Grade</th></tr>';
 		foreach($this_topic['breakdown'] as $grade) {
 			

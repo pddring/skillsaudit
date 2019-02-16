@@ -189,19 +189,19 @@ $history = $DB->get_records_sql("SELECT gh.timemodified, gh.rawgrade, gi.itemins
 
 $confidence = ["titles"=>[], "ratings"=>[]];
 $earliest = time();
+$confidence["titles"]["Average"] = 'Average';
 foreach ($history as $h) {
 	if($h->timemodified < $earliest) {
 		$earliest = $h->timemodified;
 	}
 
-	$confidence["titles"][$h->iteminstance] = $h->itemname;
-	
+	$confidence["titles"][$h->iteminstance] = str_replace(" (Confidence)", "", $h->itemname);
 }
 
 $times = [];
 $data = [];
-for($t = $earliest; $t <= time() + 604800; $t+=604800) {
-	$times[] = array($t, date("j M Y", $t));
+for($t = time(); $t >= $earliest - 604800; $t-=604800) {
+	array_unshift($times, array($t, date("j M Y", $t)));
 	$data[] = 0;
 }
 
@@ -223,30 +223,17 @@ foreach($history as $h) {
 	$h->timeid = get_time_id($h->timemodified);
 	for($i = $h->timeid; $i < count($times); $i++) {
 		$confidence["ratings"][$h->iteminstance][$i] = round($h->rawgrade);	
-	}
-	
+	}	
 }
 
-
-
-/*$timeid = 0;
-foreach($history as $h) {
-	//while($h->timemodified > $times[$timeid][0]) {
-	//	$timeid++;
-	//}/
-	if($h->itemnumber == 0) {
-		$coverage["ratings"][$h->iteminstance][$timeid] = $h->rawgrade;
-	} 
-
-	/*if($h->itemnumber == 2) {
-		$confidence["titles"][$h->iteminstance] = $h->itemname;
+for($i = 0; $i < count($times); $i++) {
+	
+	$sum = 0;
+	foreach(array_keys($confidence["titles"]) as $t) {
+		$sum += $confidence["ratings"][$t][$i];
 	}
-}*/
-
-//echo('<pre>');
-//print_r($history);
-//print_r($confidence);
- //echo('</pre>');
+	$confidence["ratings"]["Average"][$i] = $sum / (count($confidence["titles"]) - 1);
+}
 
 $chart = new \core\chart_line();
 $chart->set_title("Confidence:");
