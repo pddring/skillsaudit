@@ -348,6 +348,11 @@
 	background-color: #EFE;
 	padding: 10px;
 	margin: 10px;
+	display: block !important;
+}
+
+.current_lo_holder div {
+	display:block !important;
 }
 
 .current_lo {
