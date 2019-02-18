@@ -483,6 +483,7 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 			}
 			if($lo->confidence < $lowest_confidence) {
 				$target = $lo;
+				$lowest_confidence = $lo->confidence;
 			}
 			if($lo->timestamp > $lastupdated) {
 				$lastupdated = $lo->timestamp;
