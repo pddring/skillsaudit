@@ -252,7 +252,7 @@ class mod_skillsaudit_external extends external_api {
 		$transaction = $DB->start_delegated_transaction();
 		
 		$context = context_course::instance($courseid);
-        require_login($courseid);
+        require_capability('mod/skillsaudit:submit', $context);
 		
 		$cm = get_coursemodule_from_instance('skillsaudit', $auditid, $courseid, false, MUST_EXIST);
 		$context = context_module::instance($cm->id);
