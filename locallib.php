@@ -397,6 +397,7 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 			"lastupdated" => time(),
 			"ratings" => array()
 		);	
+		
 	$competence = 0;
 	$lastupdated = 0;
 
@@ -441,8 +442,9 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 		}
 
 	} else {
+		//return $scores;
 		// get all learning objectives
-		$skills = $DB->get_records_sql("SELECT sk.id AS skillid, sk.description, sk.number, sk.link,
+		/*$skills = $DB->get_records_sql("SELECT sk.id AS skillid, sk.description, sk.number, sk.link,
 				(SELECT COUNT(id) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS ratings,
 			    (SELECT MIN(confidence) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS lowest,
 			    (SELECT MAX(confidence) FROM {skillsauditrating} WHERE skillid=sk.id AND userid=?) AS highest,
@@ -450,6 +452,13 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 			    (SELECT timestamp FROM {skillsauditrating} WHERE skillid=sk.id AND userid=? ORDER BY timestamp DESC LIMIT 1) AS timestamp
     			FROM {skills} AS sk 
 		    WHERE sk.courseid=?", [$userid, $userid, $userid, $userid, $userid, $courseid]);
+			*/
+//			return $scores;
+			
+			$skills = $DB->get_records_sql("SELECT sk.id AS skillid, 
+			    (SELECT confidence FROM {skillsauditrating} WHERE skillid=sk.id AND userid=? ORDER BY timestamp DESC LIMIT 1) AS confidence
+    			FROM {skills} AS sk 
+		    WHERE sk.courseid=?", [$userid, $courseid]);
 
 		$grades = $DB->get_records_sql("SELECT gi.id, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule 
 			FROM {grade_items} AS gi 
@@ -485,8 +494,10 @@ function skillsaudit_calculate_scores($courseid, $userid, $cm = NULL) {
 				$target = $lo;
 				$lowest_confidence = $lo->confidence;
 			}
-			if($lo->timestamp > $lastupdated) {
-				$lastupdated = $lo->timestamp;
+			if(isset($lo->timestamp)) {
+				if($lo->timestamp > $lastupdated) {
+					$lastupdated = $lo->timestamp;
+				}
 			}
 		}
 
@@ -522,6 +533,7 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	} 
 
 	$totals = skillsaudit_calculate_scores($cm->course, $userid);
+//	$html .= '<pre>' . print_r($totals, true) . '</pre>';
 	
 	$html .= '<h3>' . get_string('suggestedtarget', 'mod_skillsaudit') . ':</h3>' . $target;
 	$html .= '<div class="summary_target">';
