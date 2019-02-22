@@ -210,7 +210,7 @@ class mod_skillsaudit_external extends external_api {
 		$context = context_module::instance($cm->id);
 		require_capability('mod/skillsaudit:deleterating', $context);
 				
-		$DB->delete_records('skillsauditrating', array('id'=>$ratingid, 'auditid'=>$cm->instance));
+		$DB->delete_records('skillsauditrating', array('id'=>$ratingid));
 		return array(
 			'ratingID' => $ratingid,
 			'summaryHtml' => skillsaudit_get_summary_html($cm, $USER->id, false)
@@ -400,6 +400,7 @@ class mod_skillsaudit_external extends external_api {
 		$updatedSkills = array();
 		require_capability('mod/skillsaudit:editskills', $context);
 		$DB->delete_records('skillsinaudit', array('skillid'=>$skillid));
+		$DB->delete_records('skillsauditrating', array('skillid'=>$skillid));
 		$DB->delete_records('skills', array('courseid'=>$courseid, 'id'=>$skillid));
 		
 		$transaction->allow_commit();

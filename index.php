@@ -39,7 +39,7 @@ $groupid = optional_param('group', 0, PARAM_INT);
 $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
 require_course_login($course);
-error_reporting(0);
+//error_reporting(0);
 $context = context_course::instance($course->id);
 $params = array(
     'context' => $context
@@ -232,7 +232,10 @@ for($i = 0; $i < count($times); $i++) {
 	foreach(array_keys($confidence["titles"]) as $t) {
 		$sum += $confidence["ratings"][$t][$i];
 	}
-	$confidence["ratings"]["Average"][$i] = $sum / (count($confidence["titles"]) - 1);
+	if(count($confidence["titles"]) > 1) {
+		$confidence["ratings"]["Average"][$i] = $sum / (count($confidence["titles"]) - 1);
+	}
+	
 }
 
 $chart = new \core\chart_line();
