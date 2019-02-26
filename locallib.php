@@ -519,15 +519,19 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 			LEFT JOIN {grade_grades} AS g ON gi.id = g.itemid
 			WHERE gi.courseid=? AND (gi.itemmodule <> ? OR (gi.itemmodule IS NULL AND gi.itemtype ='manual')) AND (g.userid=? OR g.userid IS NULL)", 
 			[$courseid, 'skillsaudit', $userid]);
-	$total_grade = 0;
+	$course['breakdown'] = $grades;
 	
 	// calculate average grade for course
-	$count = count($grades);
-	if($count > 0) {
-		foreach($grades as $grade) {
+	$count = 0;
+	$total_grade = 0;
+	foreach($grades as $grade) {
+		if(!is_null($grade->finalgrade)) {
 			$total_grade += $grade->finalgrade;
-		}
-		$course['competence'] = $total_grade / $count;
+			$count += 1;
+		}	
+	}
+	if($count > 0) {
+		$course['competence'] = round($total_grade / $count,1);
 	}
 	
 	
@@ -542,14 +546,20 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 			LEFT JOIN {grade_grades} AS g ON gi.id = g.itemid
 			WHERE gi.courseid=? AND gi.categoryid=? AND (gi.itemmodule <> ? OR (gi.itemmodule IS NULL AND gi.itemtype ='manual')) AND (g.userid=? OR g.userid IS NULL)", 
 			[$courseid, $categoryid, 'skillsaudit', $userid]);
+	$topic['breakdown'] = $grades;
 			
 	// calculate average grade for course
-	$count = count($grades);
-	if($count > 0) {
-		foreach($grades as $grade) {
+	$count = 0;
+	$total_grade = 0;
+	foreach($grades as $grade) {
+		if(!is_null($grade->finalgrade)) {
 			$total_grade += $grade->finalgrade;
+			$count += 1;
 		}
-		$topic['competence'] = $total_grade / $count;
+		
+	}
+	if($count > 0) {
+		$topic['competence'] = round($total_grade / $count,1);
 	}
 	
 	$newtime = microtime(true) - $start;
@@ -717,7 +727,7 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 
 	//$totals = skillsaudit_calculate_scores($cm->course, $userid);
 	$totals = $scores['course'];
-//	$html .= '<pre>' . print_r($scores, true) . '</pre>';
+	//$html .= '<pre>' . print_r($scores, true) . '</pre>';
 	
 	$html .= '<h3>' . get_string('suggestedtarget', 'mod_skillsaudit') . ':</h3>' . $target;
 	$html .= '<div class="summary_target">';
