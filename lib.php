@@ -391,7 +391,7 @@ function skillsaudit_grade_item_update(stdClass $skillsaudit, $grades=false) {
             grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
                 $skillsaudit->id, 1, $grades, $item);
             
-            $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Completed)'; 
+            $item['itemname'] = clean_param($skillsaudit->name, PARAM_NOTAGS) . ' (Coverage)'; 
             grade_update('mod/skillsaudit', $skillsaudit->course, 'mod', 'skillsaudit',
                 $skillsaudit->id, 2, $grades, $item);           
         }

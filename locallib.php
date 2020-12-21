@@ -274,8 +274,8 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 	$start = microtime(true);
 
 	$html = '<table class="rating_table table table-bordered"><thead>';
-	$html .= '<tr><th>Student</th><th colspan="3">' . get_string('thistopic', 'mod_skillsaudit') . '</th><th colspan="' . count($skills) . '">' . get_string('individualskills', 'mod_skillsaudit') . '</th></tr>';
-	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">' . get_string('confidence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="competence">' . get_string('competence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="coverage">' . get_string('coverage', 'mod_skillsaudit') . '</th>';
+	$html .= '<tr><th>Student</th><th colspan="4">' . get_string('thistopic', 'mod_skillsaudit') . '</th><th colspan="' . count($skills) . '">' . get_string('individualskills', 'mod_skillsaudit') . '</th></tr>';
+	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">' . get_string('confidence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="competence">' . get_string('competence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="coverage">' . get_string('coverage', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="target">' . get_string('target', 'mod_skillsaudit') . '</th>';
 	foreach($skills as $skill) {
 		$link = s($skill->number);
 		if(strlen($skill->link) > 1) {
@@ -317,6 +317,25 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 
 		$html .= '<td class="rating_td" data-col="coverage" data-sortable="' . $this_topic['coverage'] . '" id="rating_td_0_' . $user->id . '_coverage">' . get_rating_bar($this_topic['coverage']) . ' ' . $this_topic['coverage'] . '%</td>';
 		
+///TODO target
+
+		$target = '';
+		$target_id = '';
+		$scores = skillsaudit_get_scores($cm->course, $user->id, $cm);
+		//$this_topic = skillsaudit_calculate_scores($cm->course, $userid, $cm);
+		$this_topic = $scores['topic'];
+
+
+		if(array_key_exists('target', $this_topic)) {
+			$help = '';
+			if($this_topic['target']->link) {
+				$help .= '<a title="' . get_string('targetlinktooltip', 'mod_skillsaudit') . '" href="' . $this_topic['target']->link . '" target="_blank"><span class="info_icon"></span></a>';
+			}
+			$target_id = $this_topic['target']->number;
+			$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $this_topic['target']->number . '</span> <span class="target_description">' . $this_topic['target']->description . '</span>' . $help . '</div>';
+		}
+
+		$html .= '<td data-col="target" id="target_' . $user->id . '_target" data-sortable="' . $target_id . '">' . $target . '</td>';
 
 		foreach($skills as $skill) {
 			$r = '';
@@ -807,12 +826,14 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 	$grade->datesubmitted = $this_topic['lastupdated'];
 	$grade->rawgrade = $this_topic['confidence'];
 	$grade->userid = $userid;
+	$grade->feedback = $this_topic['target']->number . ': ' . $this_topic['target']->description;
 	$grades = array($userid => $grade);
 	
 	$item = array('itemname'=>$cm->name . ' (Confidence)');    
 	ob_start();
 	grade_update('mod/skillsaudit', $cm->course, 'mod', 'skillsaudit',
             $cm->instance, 0, $grades, $item);
+	$grade->feedback = NULL;
 			
 	$item = array('itemname'=>$cm->name . ' (Competence)');
 	$grade->rawgrade = $this_topic['competence'];

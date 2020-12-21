@@ -60,6 +60,7 @@ $string['deleteunused'] = 'Delete unused skills';
 $string['coverage'] = 'Coverage';
 $string['confidence'] = 'Confidence';
 $string['competence'] = 'Competence';
+$string['target'] = 'Target';
 $string['confidencequestion'] = 'Question to ask when rating confidence';
 $string['defconfidencequestion'] = 'Confidence level';
 $string['confidenceoptions'] = 'Skill rating confidence options';
