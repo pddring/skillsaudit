@@ -145,11 +145,9 @@ function xmldb_skillsaudit_upgrade($oldversion) {
         // Launch add key audit.
         $dbman->add_key($table, $key);
 
-		$key = new xmldb_key('user', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-
-        // Launch add key user.
-        $dbman->add_key($table, $key);
-
+		
+		/// TABLE: skillsauditfeedback
+		$table = new xmldb_table('skillsauditfeedback');
 		$key = new xmldb_key('from', XMLDB_KEY_FOREIGN, ['fromid'], 'user', ['id']);
 
         // Launch add key from.
