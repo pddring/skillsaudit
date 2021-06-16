@@ -1,5 +1,6 @@
+
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/skillsaudit/db" VERSION="20180305" COMMENT="XMLDB file for Moodle mod/skillsaudit"
+<XMLDB PATH="mod/skillsaudit/db" VERSION="20210616" COMMENT="XMLDB file for Moodle mod/skillsaudit"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -34,6 +35,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="course" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="skillsinaudit" COMMENT="Skills in a skillsaudit">
@@ -45,6 +47,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="skill" TYPE="foreign" FIELDS="skillid" REFTABLE="skills" REFFIELDS="id"/>
+        <KEY NAME="audit" TYPE="foreign" FIELDS="auditid" REFTABLE="skillsaudit" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="skillsauditrating" COMMENT="Rating for confidence in a skill">
@@ -59,6 +63,9 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="skill" TYPE="foreign" FIELDS="skillid" REFTABLE="skills" REFFIELDS="id"/>
+        <KEY NAME="audit" TYPE="foreign" FIELDS="auditid" REFTABLE="skillsaudit" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="skillsauditfeedback" COMMENT="Teacher feedback">
@@ -73,6 +80,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="user" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="from" TYPE="foreign" FIELDS="fromid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="audit" TYPE="foreign" FIELDS="auditid" REFTABLE="skillsaudit" REFFIELDS="id"/>
+        <KEY NAME="skill" TYPE="foreign" FIELDS="skillid" REFTABLE="skills" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
   </TABLES>

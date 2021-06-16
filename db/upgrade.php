@@ -108,6 +108,67 @@ function xmldb_skillsaudit_upgrade($oldversion) {
     }
 
 
+	if ($oldversion < 2021061600) {
+
+		// Define key course (foreign) to be added to skills.
+		$table = new xmldb_table('skills');
+		$key = new xmldb_key('course', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+
+		// Launch add key course.
+		$dbman->add_key($table, $key);
+
+		// Define key skill (foreign) to be added to skillsinaudit.
+		$table = new xmldb_table('skillsinaudit');
+		$key = new xmldb_key('skill', XMLDB_KEY_FOREIGN, ['skillid'], 'skills', ['id']);
+
+		// Launch add key skill.
+		$dbman->add_key($table, $key);
+		$key = new xmldb_key('audit', XMLDB_KEY_FOREIGN, ['auditid'], 'skillsaudit', ['id']);
+
+        // Launch add key audit.
+        $dbman->add_key($table, $key);
+
+		// Define key user (foreign) to be added to skillsauditrating.
+		$table = new xmldb_table('skillsauditrating');
+		$key = new xmldb_key('user', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+
+		// Launch add key user.
+		$dbman->add_key($table, $key);
+
+		$key = new xmldb_key('skill', XMLDB_KEY_FOREIGN, ['skillid'], 'skills', ['id']);
+
+        // Launch add key skill.
+        $dbman->add_key($table, $key);
+
+		$key = new xmldb_key('audit', XMLDB_KEY_FOREIGN, ['auditid'], 'skillsaudit', ['id']);
+
+        // Launch add key audit.
+        $dbman->add_key($table, $key);
+
+		$key = new xmldb_key('user', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+
+        // Launch add key user.
+        $dbman->add_key($table, $key);
+
+		$key = new xmldb_key('from', XMLDB_KEY_FOREIGN, ['fromid'], 'user', ['id']);
+
+        // Launch add key from.
+        $dbman->add_key($table, $key);
+		$key = new xmldb_key('audit', XMLDB_KEY_FOREIGN, ['auditid'], 'skillsaudit', ['id']);
+
+        // Launch add key audit.
+        $dbman->add_key($table, $key);
+		$key = new xmldb_key('skill', XMLDB_KEY_FOREIGN, ['skillid'], 'skills', ['id']);
+
+        // Launch add key skill.
+        $dbman->add_key($table, $key);
+ 
+
+        // Skillsaudit savepoint reached.
+        upgrade_mod_savepoint(true, 2021061600, 'skillsaudit');
+    }
+
+
 
 
     
