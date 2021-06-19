@@ -307,7 +307,6 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			}
 			continue;
 		}
-//		$html .= '<pre>' . print_r($this_topic, true) . '</pre>';
 
 		$html .= '<td class="rating_td" data-col="confidence" data-sortable="' . $this_topic['confidence'] . '" id="rating_td_0_' . $user->id . '_confidence">' . get_rating_bar($this_topic['confidence']) . ' ' .$this_topic['confidence'] . '%</td>';
 
@@ -332,7 +331,16 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 				$help .= '<a title="' . get_string('targetlinktooltip', 'mod_skillsaudit') . '" href="' . $this_topic['target']->link . '" target="_blank"><span class="info_icon"></span></a>';
 			}
 			$target_id = $this_topic['target']->number;
-			$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $this_topic['target']->number . '</span> <span class="target_description">' . $this_topic['target']->description . '</span>' . $help . '</div>';
+			//$target = '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $this_topic['target']->number . '</span> <span class="target_description">' . $this_topic['target']->description . '</span>' . $help . '</div>';
+			$target = '<div  class="target_box"><span class="target_number">';
+			if($this_topic['target']->link) {
+				$target .= '<a data-toggle="tooltip" title="' . htmlspecialchars($this_topic['target']->description). '" href="' . $this_topic['target']->link . '" target="_blank">';
+			}
+			$target .= $this_topic['target']->number;
+			if($this_topic['target']->link) {
+				$target .= '</a>';
+			}
+			$target .= '</span></div>';
 		}
 
 		$html .= '<td data-col="target" id="target_' . $user->id . '_target" data-sortable="' . $target_id . '">' . $target . '</td>';
