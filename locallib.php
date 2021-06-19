@@ -281,7 +281,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 		if(strlen($skill->link) > 1) {
 			$link = '<a href="' . $skill->link . '" target="_blank">' . $skill->number . '</a>';
 		}
-		$html .= '<th data-toggle="tooltip" class="r_sortable" data-col="skill_' . $skill->id . '" title="' . s($skill->description) . '">. ' . $link . '</th>';
+		$html .= '<th data-toggle="tooltip" id="skill_title_' . $skill->id . '" class="r_sortable" data-col="skill_' . $skill->id . '" title="' . s($skill->description) . '"> ' . $link . '</th>';
 	}
 	$html .= '</tr></thead>';
 	$html .= '<tbody>';
