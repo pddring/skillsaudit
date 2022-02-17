@@ -552,7 +552,7 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 	$count = 0;
 	$total_grade = 0;
 	foreach($grades as $grade) {
-		if(!is_null($grade->finalgrade)) {
+		if(!is_null($grade->finalgrade) && $grade->itemtype == GRADE_TYPE_VALUE) {
 			$total_grade += $grade->finalgrade;
 			$count += 1;
 		}	
@@ -568,9 +568,10 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 		[$courseid, 'skillsaudit', $cm->instance]);
 			
 	// get grade for topic
-	$grades = $DB->get_records_sql("SELECT gi.id, gi.iteminstance, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule
+	$grades = $DB->get_records_sql("SELECT gi.id, gi.iteminstance, gi.courseid, g.finalgrade, g.rawgrade, gi.itemname, gi.itemtype, gi.itemmodule, gi.scaleid, s.scale
 			FROM {grade_items} AS gi 
 			LEFT JOIN {grade_grades} AS g ON gi.id = g.itemid
+			LEFT JOIN {scale} AS s on gi.scaleid = s.id
 			WHERE gi.courseid=? AND gi.categoryid=? AND (gi.itemmodule <> ? OR (gi.itemmodule IS NULL AND gi.itemtype ='manual')) AND (g.userid=? OR g.userid IS NULL)", 
 			[$courseid, $categoryid, 'skillsaudit', $userid]);
 	$topic['breakdown'] = $grades;
@@ -579,7 +580,7 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 	$count = 0;
 	$total_grade = 0;
 	foreach($grades as $grade) {
-		if(!is_null($grade->finalgrade)) {
+		if(!is_null($grade->finalgrade) && $grade->itemtype == GRADE_TYPE_VALUE) {
 			$total_grade += $grade->finalgrade;
 			$count += 1;
 		}
@@ -774,7 +775,14 @@ function skillsaudit_get_summary_html($cm, $userid, $includechart=true){
 			$grade_str = get_string('nograde', 'mod_skillsaudit');
 			if(!is_null($grade->finalgrade)) {
 				$grade_str = round($grade->finalgrade, 1) . "%";
+				if($grade->scaleid > 0) {
+					$scale_values = explode(',', $grade->scale);
+					$grade_str = $scale_values[intval($grade->finalgrade) - 1];
+				}
 			}
+			
+			
+
 			if(!is_null($grade->itemmodule)) {
 				$mod = get_coursemodule_from_instance($grade->itemmodule, $grade->iteminstance);
 				$url = $CFG->wwwroot . '/mod/' . $grade->itemmodule . '/view.php?id=' . $mod->id;
