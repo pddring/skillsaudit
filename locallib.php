@@ -272,11 +272,13 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 
 	global $DB, $CFG;
 	$start = microtime(true);
+	$averages = [];
 
 	$html = '<table class="rating_table table table-bordered"><thead>';
 	$html .= '<tr><th>Student</th><th colspan="4">' . get_string('thistopic', 'mod_skillsaudit') . '</th><th colspan="' . count($skills) . '">' . get_string('individualskills', 'mod_skillsaudit') . '</th></tr>';
 	$html .= '<tr><th class="r_sortable" data-col="name">Name</th><th class="r_sortable" data-col="confidence">' . get_string('confidence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="competence">' . get_string('competence', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="coverage">' . get_string('coverage', 'mod_skillsaudit') . '</th><th class="r_sortable" data-col="target">' . get_string('target', 'mod_skillsaudit') . '</th>';
 	foreach($skills as $skill) {
+		$averages[$skill->number] = 0;
 		$link = s($skill->number);
 		if(strlen($skill->link) > 1) {
 			$link = '<a href="' . $skill->link . '" target="_blank">' . $skill->number . '</a>';
@@ -355,6 +357,7 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 			if(isset($this_topic['ratings'][$skill->id])) {
 				$r = $this_topic['ratings'][$skill->id];
 				$confidence = $r->confidence;
+				$averages[$skill->number] += $r->confidence;
 			}
 			
 			$html .= '<td class="rating_td" data-sortable="' . $confidence . '" data-col="skill_' . $skill->id . '" id="rating_td_' . $skill->id .'_' . $user->id . '" data-toggle="tooltip" title="' . s($skill->description) . '">';
@@ -407,6 +410,39 @@ function skillsaudit_get_tracking_table($cm, $group, $skills, $highlight = "") {
 
 
 	$html .= '</tbody></table>';
+	$user_count = count($users);
+	if($user_count > 0 && count($skills) > 0) {
+		$most_confident_skill = null;
+		$least_confident_skill = null;
+		$first = true;
+		foreach($skills as $skill) {
+			$averages[$skill->number] /= $user_count;
+			if($first || $averages[$skill->number] > $averages[$most_confident_skill->number]) {
+				$most_confident_skill = $skill;
+			}
+			if($first || $averages[$skill->number] < $averages[$least_confident_skill->number]) {
+				$least_confident_skill = $skill;
+			}
+			$first = false;
+		}
+		$html .= '<h2>Most confident at:</h2>';
+		$s = $most_confident_skill;
+		$help = '';
+		if($s->link) {
+			$help .= '<a title="' . get_string('targetlinktooltip', 'mod_skillsaudit') . '" href="' . $s->link . '" target="_blank"><span class="info_icon"></span></a>';
+		}
+		$html .= '<div class="target_box"><span class="target_number">' . $s->number . '</span> <span class="target_description">' . $s->description . '</span>' . $help . '</div>';
+	
+	
+		$html .= '<h2>Least confident at:</h2>';
+		$s = $least_confident_skill;
+		$help = '';
+		if($s->link) {
+			$help .= '<a title="' . get_string('targetlinktooltip', 'mod_skillsaudit') . '" href="' . $s->link . '" target="_blank"><span class="info_icon"></span></a>';
+		}
+		$html .= '<div class="target_box"><div class="target_icon"></div><span class="target_number">' . $s->number . '</span> <span class="target_description">' . $s->description . '</span>' . $help . '</div>';
+	
+	}
 	$html .= 'Time: ' . round(microtime(true) - $start, 5) . "s";
 	return $html;
 }
