@@ -616,15 +616,16 @@ function skillsaudit_get_scores($courseid, $userid, $cm) {
 	$count = 0;
 	$total_grade = 0;
 	foreach($grades as $grade) {
-		if(!is_null($grade->finalgrade) && $grade->itemtype == GRADE_TYPE_VALUE) {
+		if(!is_null($grade->finalgrade) && is_null($grade->scale)) {
 			$total_grade += $grade->finalgrade;
 			$count += 1;
-		}
+		} 
 		
 	}
 	if($count > 0) {
 		$topic['competence'] = round($total_grade / $count,1);
 	}
+
 	
 	$newtime = microtime(true) - $start;
 	/*$start = microtime(true);
