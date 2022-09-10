@@ -6,5 +6,8 @@
     "grunt-contrib-less": "^1.4.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-load-gruntfile": "0.0.2"
+  },
+  "dependencies": {
+    "node-sass": "^7.0.3"
   }
 }
