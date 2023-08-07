@@ -65,6 +65,12 @@ $showing_user = $USER;
 
 $can_track = has_capability('mod/skillsaudit:trackratings', $context);
 if($can_track) {
+	?>
+	<div>
+		<a class="btn btn-primary" href="<?php echo(new moodle_url('/mod/skillsaudit/export.php', array('course' => $course->id)));?>">Download all ratings</a>
+	</div>
+	<?php
+
 	echo('Group:');
 	$groups = groups_get_all_groups($COURSE->id);
 	echo('<div>');
